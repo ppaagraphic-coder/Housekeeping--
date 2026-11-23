@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ระบบส่งผ้าซัก</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+:root{--bg:#eef1f0;--c:#fff;--t:#18211d;--m:#5f6b65;--a:#1f5f4a;--r:#b3261e;--l:#d3d9d6}
+@media(prefers-color-scheme:dark){:root{--bg:#131816;--c:#1d2421;--t:#e8ece9;--m:#98a39d;--a:#2f8a6c;--r:#ff8a80;--l:#34403b}}
+*{box-sizing:border-box}body{margin:0;font:15px/1.5 Sarabun,sans-serif;background:var(--bg);color:var(--t)}
+header{display:flex;justify-content:space-between;padding:12px 16px;background:var(--a);color:#fff}
+nav{display:flex;gap:6px;padding:8px 10px;overflow-x:auto}nav button{flex:1;white-space:nowrap}
+.card{background:var(--c);border:1px solid var(--l);border-radius:8px;padding:14px;margin:10px;max-width:760px}
+h2,h3{margin:0 0 8px}label{display:block;margin:8px 0;color:var(--m);font-size:13px}
+input,select,textarea{width:100%;padding:8px;font:inherit;border:1px solid var(--l);border-radius:6px;background:var(--bg);color:var(--t)}
+button{padding:9px 14px;font:inherit;border:1px solid var(--l);border-radius:6px;background:var(--c);color:var(--t);margin:4px 4px 4px 0;cursor:pointer}
+button.p,nav button.on{background:var(--a);color:#fff;border-color:var(--a)}
+.g{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+table{width:100%;border-collapse:collapse}td,th{padding:4px 6px;border-bottom:1px solid var(--l);text-align:left}td input{width:78px}
+canvas{background:#fff;border:1px solid var(--l);width:100%;max-width:360px;touch-action:none;display:block}
+.k{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}.k div{background:var(--bg);padding:10px;border-radius:6px;font-size:13px}.k b{font-size:24px;display:block}
+.doc{background:#fff;color:#000;padding:16px;margin:10px;max-width:760px;border:1px solid #ccc}.doc td,.doc th{border-color:#ccc}
+.sg{display:flex;justify-content:space-around;text-align:center;margin-top:12px}
+@media print{#app>*:not(#out),#out button{display:none!important}.doc{border:0;margin:0}}
+</style></head><body>
+<div id="lg" class="card" style="max-width:340px;margin:12vh auto"><h2>ระบบส่งผ้าซัก</h2>
+<label>รหัส PIN<input id="pin" type="password" inputmode="numeric"></label><button class="p" onclick="login()">เข้าสู่ระบบ</button></div>
+<div id="app" hidden><header><b>ส่งผ้าซัก</b><span id="ro"></span></header>
+<nav><button data-k="f" onclick="go('f')">ใบรับผ้าชั้น</button><button data-k="n" onclick="go('n')">ใบส่งผ้า</button><button data-k="r" onclick="go('r')">รับคืน</button><button data-k="s" onclick="go('s')">สรุป</button></nav>
+<div id="v"></div><div id="out"></div></div>
+<script>
+const API='https://script.google.com/macros/s/AKfycbzrHIaRQMPpf1D1idInEK6Waf6VviPLYI6MoAogBTkdTMZzXQNE-vuQ1oAPsZyLn4KqoQ/exec';
+const IT=['ผ้าปูที่นอนแบบติดซิป (ด้าน A) 183 ซม.','ผ้าปูที่นอนแบบติดซิป (ด้าน B) 107 ซม.','ผ้ารองกันเปื้อนกันน้ำ 183 ซม.','ผ้ารองกันเปื้อนกันน้ำ 107 ซม.','ผ้าปูที่นอนแบบรัดมุม 183 ซม.','ผ้าปูที่นอนแบบรัดมุม 107 ซม.','ปลอกผ้านวม 80 นิ้ว','ปลอกผ้านวม 105 นิ้ว','ไส้ผ้านวมไมโครไฟเบอร์ 3D 80 นิ้ว','ไส้ผ้านวมไมโครไฟเบอร์ 3D 105 นิ้ว','หมอนไมโครไฟเบอร์ 19','หมอนไมโครไฟเบอร์ 19 แบบแข็ง','ปลอกหมอนกันเปื้อนติดซิป 19 นิ้ว','ปลอกหมอน 20 นิ้ว','ผ้าขนหนูเช็ดตัว 30','ผ้าขนหนูเช็ดมือ 15','ผ้าขนหนูเช็ดหน้า 12','ผ้าขนหนูเช็ดเท้า 18','เสื้อคลุมอาบน้ำผ้าฝ้าย 56'];
+const $=s=>document.querySelector(s),sum=a=>a.reduce((s,v)=>s+(+v||0),0),today=()=>new Date().toLocaleDateString('sv'),
+th=t=>new Date(t).toLocaleString('th-TH'),esc=s=>(s||'').replace(/[&<>"]/g,c=>'&#'+c.charCodeAt(0)+';'),
+uid=p=>`${p}-${today().replaceAll('-','')}-${Date.now().toString(36)}`;
+let pin='',docs=[],cur;
+async function api(o){try{return await(await fetch(API,{method:'POST',body:JSON.stringify({...o,pin})})).json()}catch(e){return{ok:false,err:'เชื่อมต่อไม่ได้ ตรวจอินเทอร์เน็ตหรือ URL ของ Apps Script'}}}
+async function login(){pin=$('#pin').value;const r=await api({a:'login'});if(!r.ok)return alert(r.err);
+ $('#ro').textContent=r.role=='admin'?'Admin':'หัวหน้าแม่บ้าน';$('#lg').hidden=true;$('#app').hidden=false;await load();go('f')}
+async function load(){const r=await api({a:'list'});docs=r.docs||[]}
+function go(k){document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.k==k));$('#out').innerHTML='';({f:vf,n:vn,r:vr,s:vs})[k]()}
+function pad(c){const x=c.getContext('2d');x.lineWidth=2.5;x.lineCap='round';let d=0;
+ const p=e=>{const r=c.getBoundingClientRect();return[(e.clientX-r.left)*c.width/r.width,(e.clientY-r.top)*c.height/r.height]};
+ c.onpointerdown=e=>{d=1;c.dataset.s=1;c.setPointerCapture(e.pointerId);x.beginPath();x.moveTo(...p(e))};
+ c.onpointermove=e=>{if(d){x.lineTo(...p(e));x.stroke()}};c.onpointerup=()=>d=0}
+function clr(id){const c=$('#'+id);c.getContext('2d').clearRect(0,0,c.width,c.height);delete c.dataset.s}
+const sigBox=(id,lb)=>`<label>${lb} (พิมพ์ชื่อตัวบรรจง)<input id="n${id}"></label><canvas id="${id}" width="360" height="120"></canvas><button onclick="clr('${id}')">ล้างลายเซ็น</button>`;
+const show=h=>{$('#out').innerHTML=h+'<div style="margin:0 10px"><button class="p" onclick="png()">บันทึกเป็นรูป PNG</button><button onclick="print()">พิมพ์ / บันทึก PDF</button></div>';$('#out').scrollIntoView()};
+async function png(){const e=$('#dc'),c=await html2canvas(e,{scale:2,backgroundColor:'#fff'}),a=document.createElement('a');a.download=e.dataset.id+'.png';a.href=c.toDataURL();a.click()}
+const sg=(n,s)=>`<div>${n}<br><img src="${s}" height="60"><br>(${esc($('#dc')?'':'')}</div>`;
+
+/* ใบรับผ้าจากชั้น */
+function vf(){$('#v').innerHTML=`<div class="card"><h2>ใบรับผ้าจากชั้น</h2><div class="g"><label>วันที่<input type="date" id="fd" value="${today()}"></label><label>ชั้น<select id="ff">${[1,2,3,4,5].map(n=>`<option>${n}</option>`).join('')}</select></label></div>
+<table>${IT.map((n,i)=>`<tr><td>${i+1}</td><td>${n}</td><td><input type="number" min="0" inputmode="numeric" class="q"></td></tr>`).join('')}</table>
+<label>หมายเหตุ / ผ้าผิดปกติ (ระบุห้อง เช่น 304 ปลอกหมอนคราบหนัก 2 ใบ)<textarea id="fn"></textarea></label>${sigBox('c1','หัวหน้าแม่บ้านรับทราบ')}<button class="p" onclick="sf()">บันทึกและเซ็น</button></div>`;pad($('#c1'))}
+async function sf(){const c=$('#c1'),date=$('#fd').value,nm=$('#nc1').value;if(!nm||!c.dataset.s)return alert('พิมพ์ชื่อและเซ็นก่อนบันทึก');
+ const id=uid('F'),d={date,fl:+$('#ff').value,q:[...document.querySelectorAll('.q')].map(e=>+e.value||0),note:$('#fn').value,name:nm,sig:c.toDataURL()};
+ const r=await api({a:'save',id,type:'floor',date,d});if(!r.ok)return alert(r.err);await load();$('#v').innerHTML='';show(docF({id,d},r.ts))}
+const docF=(x,ts)=>{const d=x.d;return`<div class="doc" id="dc" data-id="${x.id}"><h3>ใบรับผ้าจากชั้น ${d.fl}</h3><p>เลขที่ ${x.id}<br>วันที่ ${d.date} · บันทึกเมื่อ ${th(ts)}</p>
+<table><tr><th>#</th><th>รายการ</th><th>จำนวน</th></tr>${IT.map((n,i)=>d.q[i]?`<tr><td>${i+1}</td><td>${n}</td><td>${d.q[i]}</td></tr>`:'').join('')}<tr><th colspan="2">รวม</th><th>${sum(d.q)}</th></tr></table>
+<p>หมายเหตุ: ${esc(d.note)||'-'}</p><div class="sg"><div>หัวหน้าแม่บ้านรับทราบ<br><img src="${d.sig}" height="60"><br>(${esc(d.name)})</div></div></div>`};
+
+/* ใบส่งผ้า */
+function vn(){$('#v').innerHTML=`<div class="card"><h2>ใบส่งผ้าซัก</h2><div class="g"><label>จากวันที่<input type="date" id="na" value="${today()}"></label><label>ถึงวันที่<input type="date" id="nb" value="${today()}"></label></div>
+<label>บริษัทรับซัก<input id="nv"></label><button onclick="pull()">ดึงยอดจากใบรับผ้าชั้น</button><div id="pv"></div></div>`}
+function pull(){const a=$('#na').value,b=$('#nb').value,used=new Set(docs.filter(x=>x.type=='note').flatMap(x=>x.d.fids)),
+ f=docs.filter(x=>x.type=='floor'&&!used.has(x.id)&&x.d.date>=a&&x.d.date<=b);
+ if(!f.length)return $('#pv').innerHTML='<p>ไม่พบใบรับผ้าที่ยังไม่ได้ส่งในช่วงนี้</p>';
+ const t=IT.map((_,i)=>[1,2,3,4,5].map(n=>sum(f.filter(x=>x.d.fl==n).map(x=>x.d.q[i]))));cur={fids:f.map(x=>x.id),t,tot:t.map(sum)};
+ $('#pv').innerHTML=`<p>พบ ${f.length} ใบ รวม ${sum(cur.tot)} ชิ้น<br>${IT.map((n,i)=>cur.tot[i]?`${n}: ${cur.tot[i]}`:'').filter(Boolean).join('<br>')}</p>${sigBox('c2','ผู้ส่ง (โรงแรม)')}${sigBox('c3','ผู้รับ (ร้านซัก)')}<button class="p" onclick="sn()">บันทึกและเซ็นทั้งสองฝ่าย</button>`;pad($('#c2'));pad($('#c3'))}
+async function sn(){const c2=$('#c2'),c3=$('#c3'),ns=$('#nc2').value,nr=$('#nc3').value;if(!ns||!nr||!c2.dataset.s||!c3.dataset.s)return alert('ต้องพิมพ์ชื่อและเซ็นทั้งสองฝ่าย');
+ const date=today(),id=uid('LN'),d={date,from:$('#na').value,to:$('#nb').value,vendor:$('#nv').value,...cur,nameS:ns,sigS:c2.toDataURL(),nameR:nr,sigR:c3.toDataURL()};
+ const r=await api({a:'save',id,type:'note',date,d});if(!r.ok)return alert(r.err);await load();$('#v').innerHTML='';show(docN({id,d},r.ts))}
+const docN=(x,ts)=>{const d=x.d;return`<div class="doc" id="dc" data-id="${x.id}"><h3>รายการส่งผ้า</h3><p>เลขที่ ${x.id} · วันที่ส่งผ้า ${d.date}<br>ผ้าที่รับจากชั้นวันที่ ${d.from} ถึง ${d.to} · บริษัทรับซัก ${esc(d.vendor)||'-'}</p>
+<table><tr><th>#</th><th>รายการผ้า</th><th>ชั้น 1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>รวม</th></tr>${IT.map((n,i)=>`<tr><td>${i+1}</td><td>${n}</td>${d.t[i].map(v=>`<td>${v||''}</td>`).join('')}<td>${d.tot[i]||''}</td></tr>`).join('')}<tr><th colspan="7">รวมจำนวนผ้าที่ส่ง</th><th>${sum(d.tot)}</th></tr></table>
+<div class="sg"><div>ผู้ส่ง<br><img src="${d.sigS}" height="60"><br>(${esc(d.nameS)})</div><div>ผู้รับ<br><img src="${d.sigR}" height="60"><br>(${esc(d.nameR)})</div></div><p>ระบบบันทึกเมื่อ ${th(ts)}</p></div>`};
+
+/* รับคืน + ทะเบียนผ้าค้าง */
+function vr(){const done=new Set(docs.filter(x=>x.type=='ret').map(x=>x.d.nid)),ns=docs.filter(x=>x.type=='note'&&!done.has(x.id));
+ $('#v').innerHTML=`<div class="card"><h2>รับผ้าคืน</h2><label>ใบส่งผ้าที่รอรับคืน<select id="rn" onchange="rr()">${ns.map(x=>`<option value="${x.id}">${x.id} (${esc(x.d.vendor)||'-'})</option>`).join('')||'<option value="">ไม่มีใบที่รอรับคืน</option>'}</select></label><div id="rb"></div></div>${ledger()}`;rr()}
+function rr(){const x=docs.find(y=>y.id==$('#rn').value);if(!x)return $('#rb').innerHTML='';
+ $('#rb').innerHTML=`<table><tr><th>รายการ</th><th>ส่ง</th><th>รับจริง</th><th>ต่าง</th></tr>${IT.map((n,i)=>x.d.tot[i]?`<tr><td>${n}</td><td>${x.d.tot[i]}</td><td><input type="number" min="0" inputmode="numeric" class="g2" data-i="${i}" value="${x.d.tot[i]}" oninput="df()"></td><td id="df${i}">0</td></tr>`:'').join('')}</table><label>ผู้ตรวจรับ<input id="rm"></label><button class="p" onclick="sr()">บันทึกรับคืน</button>`}
+function df(){const x=docs.find(y=>y.id==$('#rn').value);document.querySelectorAll('.g2').forEach(e=>{const i=e.dataset.i,d=(+e.value||0)-x.d.tot[i],c=$('#df'+i);c.textContent=d>0?'+'+d:d;c.style.color=d?'var(--r)':''})}
+async function sr(){const x=docs.find(y=>y.id==$('#rn').value),nm=$('#rm').value;if(!nm)return alert('ระบุชื่อผู้ตรวจรับ');
+ const got=IT.map(()=>0);document.querySelectorAll('.g2').forEach(e=>got[e.dataset.i]=+e.value||0);
+ const date=today(),r=await api({a:'save',id:uid('R'),type:'ret',date,d:{date,nid:x.id,got,name:nm}});if(!r.ok)return alert(r.err);await load();vr()}
+function ledger(){const sh=IT.map(()=>0),ov=IT.map(()=>0);
+ docs.filter(x=>x.type=='ret').forEach(r=>{const n=docs.find(y=>y.id==r.d.nid);if(n)IT.forEach((_,i)=>{const d=n.d.tot[i]-r.d.got[i];d>0?sh[i]+=d:ov[i]-=d})});
+ const rows=IT.map((n,i)=>sh[i]||ov[i]?`<tr><td>${n}</td><td>${sh[i]||''}</td><td>${ov[i]||''}</td></tr>`:'').join('');
+ return`<div class="card"><h2>ทะเบียนผ้าค้างส่ง (สะสม)</h2>${rows?`<table><tr><th>รายการ</th><th>ค้าง</th><th>เกิน</th></tr>${rows}</table>`:'<p>ไม่มียอดค้าง</p>'}</div>`}
+
+/* สรุป */
+function vs(){$('#v').innerHTML=`<div class="card"><h2>สรุปรายเดือน</h2><label>เดือน<input type="month" id="sm" value="${today().slice(0,7)}" onchange="ds()"></label><div id="sd"></div></div>`;ds()}
+function ds(){const m=$('#sm').value,f=x=>(x.d.date||'').startsWith(m),N=docs.filter(x=>x.type=='note'&&f(x)),R=docs.filter(x=>x.type=='ret'&&f(x)),F=docs.filter(x=>x.type=='floor'&&f(x));
+ let got=0,lost=0,ev=0;R.forEach(r=>{got+=sum(r.d.got);const n=docs.find(y=>y.id==r.d.nid);if(!n)return;const l=sum(IT.map((_,i)=>Math.max(0,n.d.tot[i]-r.d.got[i])));lost+=l;if(l)ev++});
+ const day={};F.forEach(x=>day[x.d.date]=(day[x.d.date]||0)+sum(x.d.q));
+ const K=[['ส่งซัก (ครั้ง)',N.length],['ชิ้นที่ส่งซัก',sum(N.map(x=>sum(x.d.tot)))],['ชิ้นที่รับคืน',got],['ชิ้นขาด/ค้าง',lost],['ครั้งที่รับไม่ครบ',ev],['ใบชั้นที่มีหมายเหตุ',F.filter(x=>x.d.note).length]];
+ $('#sd').innerHTML=`<div class="k">${K.map(k=>`<div>${k[0]}<b>${k[1]}</b></div>`).join('')}</div><h3 style="margin-top:14px">ผ้าที่รับจากชั้นรายวัน (ชิ้น)</h3><table>${Object.keys(day).sort().map(d=>`<tr><td>${d}</td><td>${day[d]}</td></tr>`).join('')||'<tr><td>ไม่มีข้อมูล</td></tr>'}</table>`}
+</script></body></html>
