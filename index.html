@@ -32,7 +32,7 @@ canvas{background:#fff;border:1px solid var(--l);width:100%;max-width:360px;touc
 <nav><button data-k="f" onclick="go('f')">ใบรับผ้าชั้น</button><button data-k="n" onclick="go('n')">ใบส่งผ้า</button><button data-k="r" onclick="go('r')">รับคืน</button><button data-k="s" onclick="go('s')">สรุป</button></nav>
 <div id="v"></div><div id="out"></div></div>
 <script>
-const API='ใส่ URL Apps Script ที่นี่';
+const API='https://script.google.com/macros/s/AKfycbzrHIaRQMPpf1D1idInEK6Waf6VviPLYI6MoAogBTkdTMZzXQNE-vuQ1oAPsZyLn4KqoQ/exec';
 const IT=['ผ้าปูที่นอนแบบติดซิป (ด้าน A) ขนาด 183 ซม.','ผ้าปูที่นอนแบบติดซิป (ด้าน B) ขนาด 107 ซม.','ผ้ารองกันเปื้อนกันน้ำ ขนาด 183 ซม.','ผ้ารองกันเปื้อนกันน้ำ ขนาด 107 ซม.','ผ้าปูที่นอนแบบรัดมุม ขนาด 183 ซม.','ผ้าปูที่นอนแบบรัดมุม ขนาด 107 ซม.','ปลอกผ้านวม ขนาด 80 นิ้ว','ปลอกผ้านวม ขนาด 105 นิ้ว','ไส้ผ้านวมไมโครไฟเบอร์ 3D ขนาด 80 นิ้ว','ไส้ผ้านวมไมโครไฟเบอร์ 3D ขนาด 105 นิ้ว','หมอนไมโครไฟเบอร์ ขนาด 19','หมอนไมโครไฟเบอร์ ขนาด 19 แบบแข็ง','ปลอกหมอนกันเปื้อนติดซิป ขนาด 19 นิ้ว','ปลอกหมอน ขนาด 20 นิ้ว','ผ้าขนหนูเช็ดตัว ขนาด 30','ผ้าขนหนูเช็ดมือ ขนาด 15','ผ้าขนหนูเช็ดหน้า ขนาด 12','ผ้าขนหนูเช็ดเท้า ขนาด 18','เสื้อคลุมอาบน้ำผ้าฝ้าย ขนาด 56'];
 const FC=['#2f6fd0','#23895b','#a8730f','#d4572a','#8250c8'];
 const $=s=>document.querySelector(s),sum=a=>a.reduce((s,v)=>s+(+v||0),0),today=()=>new Date().toLocaleDateString('sv'),
