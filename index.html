@@ -269,9 +269,9 @@ function closeCase(id,kind){const c=S.cases.find(x=>x.id==id);c.st='closed';c.ki
   c.amt=kind=='ชดใช้'?(+prompt('จำนวนเงินชดใช้ (บาท)','0')||0):0;up('cases',c);chk(S.sends.find(x=>x.id==c.sendId));render()}
 
 // ---- 2. แอดมิน ----
-V.admin=()=>{const m=D.m,P=Object.fromEntries(items().map(i=>[i.id,i.p||0])),inM=d=>(d||'').slice(0,7)==m,
+V.admin=()=>{const m=D.m,inM=d=>(d||'').slice(0,7)==m,
   Lm=S.logs.filter(l=>inM(l.date)),Sm=S.sends.filter(s=>inM(s.date)),col=sum(Lm.map(l=>sum(Object.values(l.q)))),
-  snt=sum(Sm.map(s=>sum(Object.values(s.lines)))),cost=sum(Sm.map(s=>sum(Object.keys(s.lines).map(i=>s.lines[i]*(P[i]||0))))),
+  snt=sum(Sm.map(s=>sum(Object.values(s.lines)))),cost=sum(Sm.map(s=>+s.cost||0)),
   man=S.manual.filter(x=>inM(x.date)&&!x.del),mans=sum(man.map(x=>+x.amt||0)),comp=sum(S.cases.filter(c=>c.kind=='ชดใช้'&&inM(c.cdate)).map(c=>c.amt)),
   days=[...new Set(Lm.map(l=>l.date).concat(Sm.map(s=>s.date)))].sort(),O=S.cases.filter(c=>c.st=='open'&&c.q>0),cl=S.closes.find(x=>x.id=='m'+m),
   unsent=sum(S.logs.filter(l=>!l.sendId).map(l=>sum(Object.values(l.q))));
@@ -279,8 +279,11 @@ V.admin=()=>{const m=D.m,P=Object.fromEntries(items().map(i=>[i.id,i.p||0])),inM
   <div class="k"><div>ยอดสะสมยังไม่ส่ง<b>${unsent}</b></div><div>เก็บผ้าเดือนนี้<b>${col}</b></div><div>ส่งซัก (${Sm.length} ครั้ง)<b>${snt}</b></div>
   <div>ค่าซัก (บาท)<b>${cost.toLocaleString()}</b></div><div>ค่าใช้จ่ายอื่นกรอกเอง<b>${mans.toLocaleString()}</b></div><div>ชดใช้ (บาท)<b>${comp.toLocaleString()}</b></div>
   <div style="grid-column:span 2">รวมรายจ่าย (ค่าซัก+อื่นๆ) <b>${(cost+mans).toLocaleString()} บาท</b></div></div>
-  <p><small>เก็บผ้า = ยอดที่แม่บ้านบันทึกในแท็บ "เก็บผ้า" · ส่งซัก = ยอดในใบส่งซักของเดือนที่เลือก · ค่าซัก = จำนวนส่งซัก × ราคา (ตั้งราคาในแท็บ "สต็อก")</small></p>
+  <p><small>เก็บผ้า = ยอดที่แม่บ้านบันทึกในแท็บ "เก็บผ้า" · ส่งซัก = ยอดในใบส่งซักของเดือนที่เลือก · ค่าซัก = ยอดที่แอดมินกรอกตามครั้งส่งซักด้านล่าง</small></p>
   <button class="p" onclick="closeM(${col},${snt},${cost},${mans},${comp})">ปิดยอดเดือน ${m}</button></div>
+  <div class="card"><h3>ค่าซักตามครั้ง — ${m}</h3><div class="ov"><table><tr><th>เลขที่ใบส่งซัก</th><th>วันที่</th><th>ร้านซัก</th><th>ชิ้น</th><th style="width:110px">ค่าซัก (บาท)</th></tr>
+  ${Sm.map(s=>`<tr><td class="l">${s.no}</td><td>${s.date}</td><td class="l">${esc(s.co||'-')}</td><td>${sum(Object.values(s.lines))}</td><td><input type="number" inputmode="decimal" value="${+s.cost||''}" placeholder="0" style="width:100px;text-align:right" onchange="editCost('${s.id}',this.value)"></td></tr>`).join('')||'<tr><td colspan="5">ไม่มีใบส่งซักในเดือนนี้</td></tr>'}
+  <tr><td colspan="4" class="l"><b>รวมค่าซัก</b></td><td><b>${cost.toLocaleString()}</b></td></tr></table></div></div>
   <div class="card"><h3>ค่าใช้จ่ายอื่น (กรอกเอง) — ${m}</h3><div class="ov"><table><tr><th>วันที่</th><th>รายการ</th><th style="width:110px">จำนวนเงิน (บาท)</th><th style="width:50px"></th></tr>
   ${man.map(x=>`<tr><td><input type="date" value="${x.date}" onchange="editMan('${x.id}','date',this.value)"></td><td><input value="${esc(x.label)}" style="width:100%" onchange="editMan('${x.id}','label',this.value)"></td><td><input type="number" inputmode="decimal" value="${+x.amt||0}" style="width:100px;text-align:right" onchange="editMan('${x.id}','amt',this.value)"></td><td><button class="s" onclick="delMan('${x.id}')">ลบ</button></td></tr>`).join('')}
   <tr style="background:#f6f8f9"><td><input id="mn_d" type="date" value="${inM(today())?today():m+'-01'}"></td><td><input id="mn_l" placeholder="รายการใหม่" style="width:100%"></td><td><input id="mn_a" type="number" inputmode="decimal" placeholder="0" style="width:100px;text-align:right"></td><td><button class="s" onclick="addMan()">+ เพิ่ม</button></td></tr>
@@ -308,6 +311,7 @@ async function resetData(mode){const all=mode=='all';
   Q=[];['logs','sends','rets','cases','manual','closes'].concat(all?['cfg']:[]).forEach(c=>S[c]=[]);
   D={z:0,q:{},n:{},m:today().slice(0,7)};localStorage.removeItem('DQ');save();render();alert('ล้างข้อมูลเรียบร้อย')}
 const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+function editCost(id,v){const s=S.sends.find(x=>x.id==id);if(!s)return;s.cost=+v||0;up('sends',s);render()}
 function addMan(){const label=$('mn_l').value.trim(),amt=+$('mn_a').value||0,date=$('mn_d').value||today();
   if(!label&&!amt)return alert('กรอกรายการหรือจำนวนเงิน');up('manual',{id:uid(),date,label,amt});render()}
 function editMan(id,f,v){const x=S.manual.find(y=>y.id==id);if(!x)return;x[f]=f=='amt'?(+v||0):v;up('manual',x);render()}
@@ -317,14 +321,14 @@ function closeM(col,snt,cost,man,comp){const m=D.m;if(!confirm('ปิดยอ�
 // ---- 3. สโตร์ ----
 V.store=()=>{const I=D.cfg||items();
   return `<div class="card"><h3>ผ้าทั้งหมด: สต็อก / par ตามชั้น / ที่ร้านซัก</h3><p>ที่ชั้นพร้อมใช้ = par − ค้างที่ร้านซัก · ทั้งหมด = สต็อก + par</p>
-  <div class="ov"><table><tr><th>รายการ</th><th>ราคา</th><th>สต็อก</th>${Z.map((z,i)=>`<th style="color:${COL[i]}">par ${z.replace('ชั้น ','')}</th>`).join('')}<th>par รวม</th><th>ที่ร้านซัก</th><th>พร้อมใช้</th><th>ทั้งหมด</th></tr>
+  <div class="ov"><table><tr><th>รายการ</th><th>สต็อก</th>${Z.map((z,i)=>`<th style="color:${COL[i]}">par ${z.replace('ชั้น ','')}</th>`).join('')}<th>par รวม</th><th>ที่ร้านซัก</th><th>พร้อมใช้</th><th>ทั้งหมด</th></tr>
   ${I.map((it,k)=>{const L=sum(S.sends.filter(s=>s.st!='closed').map(s=>Math.max(0,outst(s,it.id)))),ps=sum(it.par);
-   return `<tr><td><input value="${it.n}" size="14" oninput="ed(${k},'n',this.value)"></td><td><input type="number" value="${it.p||0}" style="width:54px" oninput="ed(${k},'p',+this.value)"></td>
+   return `<tr><td><input value="${it.n}" size="14" oninput="ed(${k},'n',this.value)"></td>
    <td><input type="number" value="${it.stock||0}" style="width:54px" oninput="ed(${k},'stock',+this.value)"></td>
    ${it.par.map((v,z)=>`<td><input type="number" value="${v||0}" style="width:46px" oninput="ed(${k},'par',+this.value,${z})"></td>`).join('')}
    <td>${ps}</td><td>${L}</td><td>${ps-L}</td><td><b>${(it.stock||0)+ps}</b></td></tr>`}).join('')}</table></div>
-  <button class="p" onclick="saveCfg()">บันทึกสต็อก/par/ราคา</button>
-  <button class="p" style="background:#334155" onclick="resetNames()">ใช้ชื่อรายการตามฟอร์ม PDF (คงราคา/สต็อก/par เดิม)</button></div>`};
+  <button class="p" onclick="saveCfg()">บันทึกสต็อก/par</button>
+  <button class="p" style="background:#334155" onclick="resetNames()">ใช้ชื่อรายการตามฟอร์ม PDF (คงสต็อก/par เดิม)</button></div>`};
 function ed(k,f,v,z){D.cfg=D.cfg||JSON.parse(JSON.stringify(items()));if(z==null)D.cfg[k][f]=v;else D.cfg[k].par[z]=v}
 function resetNames(){const I=JSON.parse(JSON.stringify(items()));DEF.forEach((d,i)=>{if(I[i])I[i].n=d.n;else I.push(d)});D.cfg=null;up('cfg',{id:'cfg',items:I});render()}
 function saveCfg(){up('cfg',{id:'cfg',items:D.cfg||items()});D.cfg=null;render()}
