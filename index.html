@@ -287,7 +287,21 @@ V.admin=()=>{const m=D.m,P=Object.fromEntries(items().map(i=>[i.id,i.p||0])),inM
   <tr><td colspan="2" class="l"><b>รวม</b></td><td><b>${mans.toLocaleString()}</b></td><td></td></tr></table></div></div>
   <div class="card"><h3>เคสตำหนิ/ไม่ได้รับที่ยังไม่ปิด (${O.length})</h3>${O.map(c=>{const s=S.sends.find(x=>x.id==c.sendId)||{};return `<div style="padding:6px 0;border-bottom:1px solid #eee">${s.no||''} · ${nm(c.item)} · <span class="tag">${c.t=='ขาด'?'ไม่ได้รับ':c.t} ${c.q}</span><br>
    <button class="s" onclick="closeCase('${c.id}','ได้คืนแล้ว')">ปิด: ได้คืน</button> <button class="s" onclick="closeCase('${c.id}','ชดใช้')">ปิด: ชดใช้</button></div>`}).join('')||'ไม่มี'}</div>
-  <div class="card"><h3>รายวัน</h3><div class="ov"><table><tr><th>วันที่</th><th>เก็บ</th><th>ส่งซัก</th></tr>${days.map(d=>`<tr><td>${d}</td><td>${sum(Lm.filter(l=>l.date==d).map(l=>sum(Object.values(l.q))))}</td><td>${sum(Sm.filter(s=>s.date==d).map(s=>sum(Object.values(s.lines))))}</td></tr>`).join('')}</table></div></div>`};
+  <div class="card"><h3>รายวัน</h3><div class="ov"><table><tr><th>วันที่</th><th>เก็บ</th><th>ส่งซัก</th></tr>${days.map(d=>`<tr><td>${d}</td><td>${sum(Lm.filter(l=>l.date==d).map(l=>sum(Object.values(l.q))))}</td><td>${sum(Sm.filter(s=>s.date==d).map(s=>sum(Object.values(s.lines))))}</td></tr>`).join('')}</table></div></div>
+  <div class="card"><h3>ล้างข้อมูล / เริ่มต้นใหม่</h3>
+  <p><small>สำรองข้อมูลเป็นไฟล์ก่อนล้างได้ · การล้างจะลบข้อมูลใน Google Sheet และในเครื่องทุกเครื่องที่ซิงก์ ย้อนกลับไม่ได้</small></p>
+  <button class="p" style="background:#334155" onclick="backup()">⬇ ดาวน์โหลดสำรองข้อมูล (JSON)</button>
+  <button class="p" style="background:#b45309" onclick="resetData('data')">ล้างข้อมูลการใช้งาน (เก็บราคา/สต็อก/par)</button>
+  <button class="p" style="background:#b42318" onclick="resetData('all')">รีเซ็ตทั้งหมด กลับเป็นค่าเริ่มต้น</button></div>`};
+function backup(){const b=new Blob([JSON.stringify(S,null,1)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='laundry-backup-'+today()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),3000)}
+async function resetData(mode){const all=mode=='all';
+  if(role!='admin')return alert('เฉพาะแอดมินเท่านั้น');
+  if(!confirm(all?'รีเซ็ตทั้งหมด: ลบเก็บผ้า ส่งซัก รับคืน เคส ค่าใช้จ่าย ปิดยอด และราคา/สต็อก/par ทั้งหมด\nย้อนกลับไม่ได้ ดำเนินการต่อ?':'ล้างข้อมูลการใช้งาน: ลบเก็บผ้า ส่งซัก รับคืน เคส ค่าใช้จ่าย และปิดยอด (เก็บราคา/สต็อก/par)\nย้อนกลับไม่ได้ ดำเนินการต่อ?'))return;
+  if(prompt('พิมพ์คำว่า ล้าง เพื่อยืนยัน')!=='ล้าง')return alert('ยกเลิกแล้ว ไม่มีการลบข้อมูล');
+  if(API){try{const r=await(await fetch(API,{method:'POST',body:JSON.stringify({pin,reset:mode})})).json();if(!r.ok)throw 0}
+    catch(e){return alert('ล้างข้อมูลบน Google Sheet ไม่สำเร็จ — ตรวจว่า Deploy Code.gs ตัวใหม่แล้ว (ข้อมูลยังไม่ถูกลบ)')}}
+  Q=[];['logs','sends','rets','cases','manual','closes'].concat(all?['cfg']:[]).forEach(c=>S[c]=[]);
+  D={z:0,q:{},n:{},m:today().slice(0,7)};localStorage.removeItem('DQ');save();render();alert('ล้างข้อมูลเรียบร้อย')}
 const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
 function addMan(){const label=$('mn_l').value.trim(),amt=+$('mn_a').value||0,date=$('mn_d').value||today();
   if(!label&&!amt)return alert('กรอกรายการหรือจำนวนเงิน');up('manual',{id:uid(),date,label,amt});render()}
