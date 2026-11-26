@@ -81,13 +81,18 @@ async function login(){
 function logout(){role=pin='';localStorage.role=localStorage.pin='';render()}
 
 // ---- ลายเซ็น + แชร์ไฟล์หลักฐาน A4 (LINE) ----
-const pad=id=>`<canvas id="${id}" class="sig" width="300" height="90"></canvas><button class="s" onclick="clr('${id}')">ล้าง</button>`;
+const pad=id=>`<canvas id="${id}" class="sig" width="300" height="90"></canvas><button class="s" onclick="clr('${id}')">ล้าง</button>
+<div style="margin-top:6px"><input id="${id}_n" placeholder="ชื่อผู้เซ็น" style="width:100%;margin-bottom:4px"><input id="${id}_d" type="date" value="${today()}" style="width:100%"></div>`;
 function initPads(){document.querySelectorAll('canvas.sig').forEach(c=>{const x=c.getContext('2d');x.lineWidth=2;x.lineCap='round';let d=0;
   const p=e=>{const r=c.getBoundingClientRect();return[(e.clientX-r.left)*300/r.width,(e.clientY-r.top)*90/r.height]};
   c.onpointerdown=e=>{d=1;c.setPointerCapture(e.pointerId);x.beginPath();x.moveTo(...p(e));c.dirty=1};
   c.onpointermove=e=>{if(d){x.lineTo(...p(e));x.stroke()}};c.onpointerup=()=>d=0})}
 const clr=id=>{const c=$(id);c.getContext('2d').clearRect(0,0,300,90);c.dirty=0};
 const sg=id=>{const c=$(id);return c&&c.dirty?c.toDataURL('image/png'):''};
+// ลายเซ็น + ชื่อผู้เซ็น + วันที่ (ต้องครบทั้งสามอย่าง)
+function signOf(id,who){const sig=sg(id);if(!sig){alert('กรุณาเซ็นชื่อ'+(who?' — '+who:''));return null}
+  const n=(($(id+'_n')||{}).value||'').trim();if(!n){alert('กรุณากรอกชื่อผู้เซ็น'+(who?' — '+who:''));return null}
+  return {sig,n,d:(($(id+'_d')||{}).value)||today()}}
 // ---- คำนวณ ----
 const tot=L=>{const T={};L.forEach(l=>Object.keys(l.q).forEach(i=>{(T[i]=T[i]||[0,0,0,0,0,0])[l.z]+=l.q[i]}));return T};
 const outst=(s,i)=>(s.lines[i]||0)-sum(S.rets.filter(r=>r.sendId==s.id).map(r=>r.g[i]||0))
@@ -113,8 +118,10 @@ function docModel(kind,s,r){
     title=day?'เก็บผ้ารวมรายวัน':send?'รายการส่งผ้า':'รายการรับผ้าคืน (ตำหนิ / หาย / ไม่ได้รับ)',
     T=sum(I.map(tv)),by=[...new Set(LG.map(l=>l.by).filter(Boolean))].join(', '),
     no=day?'DC'+s.date.replace(/-/g,''):d.no,dt=day?s.date:send?s.date:r.date,
-    L=day?['ผู้ส่ง',(LG[0]||{}).sig||'','ผู้รับ','']:send?['ผู้ส่ง',s.sa,'ผู้รับ',s.sb]:['ผู้ส่ง',r.rb,'ผู้รับ',r.ra];
-  return {kind,s,r,I,day,send,d,LG,zq,nz,tv,rm,title,T,by,no,dt,L}}
+    L0=LG[0]||{},sigs=day?[{lb:'หัวหน้าแม่บ้าน',im:L0.sig||'',n:L0.sn,d:L0.sd}]
+      :send?[{lb:'ผู้ส่ง',im:s.sa,n:s.san,d:s.sad},{lb:'ผู้รับ',im:s.sb,n:s.sbn,d:s.sbd}]
+      :[{lb:'ผู้ส่ง',im:r.rb,n:r.rbn,d:r.rbd},{lb:'ผู้รับ',im:r.ra,n:r.ran,d:r.rad}];
+  return {kind,s,r,I,day,send,d,LG,zq,nz,tv,rm,title,T,by,no,dt,sigs}}
 // ปุ่มพิมพ์ทั้งหมด → เปิดเอกสารเป็น PDF A4 ในแท็บใหม่ (กดพิมพ์/บันทึกจากตัวดู PDF ได้)
 async function openPdf(kind,s,r){
   const w=open('','_blank');if(w)w.document.write('<p style="font:16px sans-serif;padding:20px">กำลังสร้าง PDF…</p>');
@@ -129,7 +136,7 @@ async function docCanvas(M){
   const FF='"Sarabun","TH Sarabun New","Noto Sans Thai","Thonburi",sans-serif';
   if(document.fonts&&document.fonts.ready)await document.fonts.ready;
   const ld=async u=>{if(!u)return null;const i=new Image();i.src=u;await i.decode();return i};
-  const hdr=await ld(HDR),sa=await ld(M.L[1]),sb=await ld(M.L[3]);
+  const hdr=await ld(HDR),SI=await Promise.all(M.sigs.map(g=>ld(g.im)));
   const {I,day,send,nz,tv,rm,title,T,by,no,dt,kind,d,r,zq}=M;
   const MX=7,MY=7,CWM=297-2*MX,X0=MX*K,CW=CWM*K,seg=(typeof Intl!=='undefined'&&Intl.Segmenter)?new Intl.Segmenter('th',{granularity:'word'}):null;
   const wrap=(t,w)=>{t=String(t==null?'':t);if(!t)return[''];
@@ -166,11 +173,14 @@ async function docCanvas(M){
     box(xs[nc-2],y,mm[nc-2]*K,base,T||'','center',1);box(xs[nc-1],y,mm[nc-1]*K,base,'','center',0);y+=base;
     if(draw){x.lineWidth=.5*K;x.strokeStyle='#000';x.strokeRect(X0,ty,CW,y-ty)}
     y+=6*f*K;const sh=14*f*K,bw=CWM*.4*K;
-    [[X0,sa,M.L[0]],[X0+CW-bw,sb,M.L[2]]].forEach(([bx,im,lb])=>{if(!draw)return;
+    const pos=M.sigs.length==1?[X0+(CW-bw)/2]:[X0,X0+CW-bw];
+    M.sigs.forEach((g,gi)=>{if(!draw)return;const bx=pos[gi],im=SI[gi];
       if(im){const sc=Math.min(bw/im.width,sh/im.height),w=im.width*sc,h=im.height*sc;x.drawImage(im,bx+(bw-w)/2,y+(sh-h)/2,w,h)}
       x.lineWidth=.26*K;x.strokeStyle='#000';x.beginPath();x.moveTo(bx,y+sh+.5*K);x.lineTo(bx+bw,y+sh+.5*K);x.stroke();
-      font(0);x.fillStyle='#000';x.textAlign='center';x.textBaseline='middle';x.fillText(lb,bx+bw/2,y+sh+.5*K+lh*.8)});
-    return y+sh+lh*1.6};
+      font(0);x.fillStyle='#000';x.textAlign='center';x.textBaseline='middle';x.fillText(g.lb,bx+bw/2,y+sh+.5*K+lh*.8);
+      x.fillText('('+(g.n||'................................')+')',bx+bw/2,y+sh+.5*K+lh*1.9);
+      x.fillText('วันที่ '+(g.d||'................'),bx+bw/2,y+sh+.5*K+lh*3)});
+    return y+sh+lh*3.6};
   let f=.5;for(let g=1.3;g>=.5;g-=.02){if(run(g,false)<=H-MY*K){f=g;break}}
   x.fillStyle='#fff';x.fillRect(0,0,W,H);run(f,true);return c}
 async function makePdf(M){
@@ -206,8 +216,8 @@ V.collect=()=>{const z=D.z,I=items(),td=S.logs.filter(l=>l.date==(D.dt||today())
   <div class="card"><h3>บันทึกวันนี้ (${td.length})</h3>${td.map(l=>`<div>${Z[l.z]}: ${sum(Object.values(l.q))} ชิ้น ${l.sendId?'<span class="tag ok">ส่งซักแล้ว</span>':''}</div>`).join('')||'-'}</div>`};
 function saveLog(){const I=items(),date=D.dt||today(),made=[];
   Z.forEach((_,z)=>{const q={},n={};I.forEach(it=>{const v=D.q[z+it.id];if(v>0){q[it.id]=v;if(D.n[z+it.id])n[it.id]=D.n[z+it.id]}});if(Object.keys(q).length)made.push({z,q,n})});
-  if(!made.length)return alert('ยังไม่ได้กรอกจำนวน');const sig=sg('s1');if(!sig)return alert('กรุณาเซ็นรับทราบ');
-  const logs=made.map(m=>({id:uid(),date,z:m.z,q:m.q,n:m.n,sig,by:D.by||''}));logs.forEach(l=>up('logs',l));
+  if(!made.length)return alert('ยังไม่ได้กรอกจำนวน');const SG=signOf('s1','หัวหน้าแม่บ้าน');if(!SG)return;
+  const logs=made.map(m=>({id:uid(),date,z:m.z,q:m.q,n:m.n,sig:SG.sig,sn:SG.n,sd:SG.d,by:D.by||''}));logs.forEach(l=>up('logs',l));
   const T=tot(logs),rows=I.filter(it=>T[it.id]).map(it=>lineTxt(it,T[it.id]));
   D.q={};D.n={};dq();render();
   shareDoc('day',{date})}
@@ -228,8 +238,8 @@ V.send=()=>{const U=S.logs.filter(l=>!l.sendId),ds=U.map(l=>l.date).sort(),f=D.f
   <button class="p" onclick="mkSend('${f}','${t}')">บันทึกใบส่งซัก + แชร์ไฟล์ A4 (PDF)</button></div>
   <div class="card"><h3>ใบส่งซักล่าสุด</h3>${S.sends.slice(-8).reverse().map(s=>`<div>${s.no} · ${s.co} · ${sum(Object.values(s.lines))} ชิ้น <span class="tag ${s.st=='closed'?'ok':''}">${s.st=='closed'?'ปิดงาน':'ค้างรับ'}</span> <button class="s" onclick="openPdf('send',S.sends.find(x=>x.id=='${s.id}'))">📄 เปิด PDF A4</button></div>`).join('')||'-'}</div>`};
 function mkSend(f,t){const L=S.logs.filter(l=>!l.sendId&&l.date>=f&&l.date<=t);if(!L.length)return alert('ไม่มียอดสะสม');
-  const sa=sg('sa'),sb=sg('sb');if(!sa||!sb)return alert('ต้องเซ็นทั้งผู้ส่งและร้านซัก');
-  const T=tot(L),id=uid(),s={id,no:'SW'+today().replace(/-/g,'')+'-'+(S.sends.length+1),date:today(),from:f,to:t,co:D.co||'',zq:T,lines:{},sa,sb,st:'open'};
+  const SA=signOf('sa','ผู้ส่ง (แม่บ้าน)'),SB=signOf('sb','ร้านซัก');if(!SA||!SB)return;
+  const T=tot(L),id=uid(),s={id,no:'SW'+today().replace(/-/g,'')+'-'+(S.sends.length+1),date:today(),from:f,to:t,co:D.co||'',zq:T,lines:{},sa:SA.sig,san:SA.n,sad:SA.d,sb:SB.sig,sbn:SB.n,sbd:SB.d,st:'open'};
   Object.keys(T).forEach(i=>s.lines[i]=sum(T[i]));L.forEach(l=>{l.sendId=id;up('logs',l)});up('sends',s);
   const rows=items().filter(it=>T[it.id]).map(it=>lineTxt(it,T[it.id]));render();
   shareDoc('send',s)}
@@ -257,8 +267,8 @@ V.ret=()=>{const O=S.sends.filter(s=>s.st!='closed');const s=S.sends.find(x=>x.i
   <div class="card"><h3>ใบรับผ้าล่าสุด</h3>${S.rets.slice(-8).reverse().map(r=>{const x=S.sends.find(y=>y.id==r.sendId)||{};return `<div style="padding:4px 0">${x.no||''} · ${r.date} · รับ ${sum(Object.values(r.g))} ชิ้น <button class="s" onclick="openPdf('ret',null,S.rets.find(y=>y.id=='${r.id}'))">📄 เปิด PDF A4</button></div>`}).join('')||'-'}</div>`};
 function saveRet(sid){const s=S.sends.find(x=>x.id==sid),g={},d={},l={},rn={};let bad=0;
   Object.keys(s.lines).forEach(i=>{const a=$('g'+i);if(!a)return;g[i]=+a.value||0;d[i]=+$('d'+i).value||0;l[i]=+$('l'+i).value||0;rn[i]=$('r'+i).value;if(g[i]>outst(s,i))bad=1});
-  if(bad)return alert('จำนวนรับเกินยอดค้าง');const ra=sg('ra'),rb=sg('rb');if(!ra||!rb)return alert('ต้องเซ็นทั้งสองฝ่าย');
-  const r={id:uid(),sendId:sid,date:today(),g,d,l,rn,ra,rb};up('rets',r);
+  if(bad)return alert('จำนวนรับเกินยอดค้าง');const RA=signOf('ra','ผู้รับ (แม่บ้าน/แอดมิน)'),RB=signOf('rb','ร้านซัก');if(!RA||!RB)return;
+  const r={id:uid(),sendId:sid,date:today(),g,d,l,rn,ra:RA.sig,ran:RA.n,rad:RA.d,rb:RB.sig,rbn:RB.n,rbd:RB.d};up('rets',r);
   r.m={};Object.keys(g).forEach(i=>{const out=outst(s,i),dd=Math.min(d[i]||0,out),ll=Math.min(l[i]||0,out-dd),m=out-dd-ll;r.m[i]=m;l[i]=ll;
     [['ตำหนิ',dd],['หาย',ll],['ไม่ได้รับ',m]].forEach(([t,q])=>{const c=S.cases.find(c=>c.sendId==sid&&c.item==i&&(c.t==t||(t=='ไม่ได้รับ'&&c.t=='ขาด'))&&c.st=='open');
       if(c){c.q=q;if(!q){c.st='closed';c.kind='auto'}up('cases',c)}else if(q)up('cases',{id:uid(),src:'shop',sendId:sid,item:i,t,q,st:'open',date:today()})})});
