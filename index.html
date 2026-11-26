@@ -108,9 +108,9 @@ function docModel(kind,s,r){
     LG=day?S.logs.filter(l=>l.date==s.date):send?S.logs.filter(l=>l.sendId==s.id):[],zq=day?tot(LG):null,
     vil=day&&I.some(it=>(zq[it.id]||[])[5]),nz=day?(vil?6:5):0,
     tv=it=>day?sum(zq[it.id]||[]):send?(s.lines[it.id]||0):(r.g[it.id]||0),
-    rm=it=>kind=='ret'?[r.d[it.id]?'ตำหนิ '+r.d[it.id]:'',r.m&&r.m[it.id]?'ไม่ได้รับ '+r.m[it.id]:'',r.rn[it.id]||''].filter(Boolean).join(' / ')
+    rm=it=>kind=='ret'?[r.d[it.id]?'ตำหนิ '+r.d[it.id]:'',r.l&&r.l[it.id]?'หาย '+r.l[it.id]:'',r.m&&r.m[it.id]?'ไม่ได้รับ '+r.m[it.id]:'',r.rn[it.id]||''].filter(Boolean).join(' / ')
       :LG.filter(l=>l.n[it.id]).map(l=>Z[l.z]+': '+l.n[it.id]).join(', '),
-    title=day?'เก็บผ้ารวมรายวัน':send?'รายการส่งผ้า':'รายการรับผ้าคืน (ตำหนิ / ไม่ได้รับ)',
+    title=day?'เก็บผ้ารวมรายวัน':send?'รายการส่งผ้า':'รายการรับผ้าคืน (ตำหนิ / หาย / ไม่ได้รับ)',
     T=sum(I.map(tv)),by=[...new Set(LG.map(l=>l.by).filter(Boolean))].join(', '),
     no=day?'DC'+s.date.replace(/-/g,''):d.no,dt=day?s.date:send?s.date:r.date,
     L=day?['ผู้ส่ง',(LG[0]||{}).sig||'','ผู้รับ','']:send?['ผู้ส่ง',s.sa,'ผู้รับ',s.sb]:['ผู้ส่ง',r.rb,'ผู้รับ',r.ra];
@@ -174,7 +174,7 @@ async function docCanvas(M){
   let f=.5;for(let g=1.3;g>=.5;g-=.02){if(run(g,false)<=H-MY*K){f=g;break}}
   x.fillStyle='#fff';x.fillRect(0,0,W,H);run(f,true);return c}
 async function makePdf(M){
-  const c=await docCanvas(M),jpg=new Uint8Array(await(await new Promise(r=>c.toBlob(r,'image/jpeg',.92))).arrayBuffer()),
+  const c=await(M.kind=='rep'?repCanvas(M):docCanvas(M)),jpg=new Uint8Array(await(await new Promise(r=>c.toBlob(r,'image/jpeg',.92))).arrayBuffer()),
     pw=841.89,ph=595.28,enc=new TextEncoder(),parts=[],off=[];let len=0;
   const add=v=>{const u=typeof v=='string'?enc.encode(v):v;parts.push(u);len+=u.length},
     obj=(n,b)=>{off[n]=len;add(`${n} 0 obj\n${b}\nendobj\n`)};
@@ -249,25 +249,25 @@ V.ret=()=>{const O=S.sends.filter(s=>s.st!='closed');const s=S.sends.find(x=>x.i
   if(!s)return '<div class="card">ไม่มีใบส่งซักที่ค้างรับ</div>';
   const ks=Object.keys(s.lines).filter(i=>outst(s,i)>0);
   return `<div class="card"><h3>รับผ้าคืน</h3><select onchange="D.rs=this.value;render()">${O.map(x=>`<option value="${x.id}" ${x.id==s.id?'selected':''}>${x.no} · ${x.co}</option>`).join('')}</select>
-  <div class="ov"><table><tr><th>รายการ</th><th>ค้างรับ</th><th>รับ(ดี)</th><th>ตำหนิ</th><th>หมายเหตุ</th></tr>${ks.map(i=>`<tr><td class="l">${nm(i)}</td><td><b>${outst(s,i)}</b></td>
-   <td><input id="g${i}" type="number" inputmode="numeric" min="0" style="width:56px"></td><td><input id="d${i}" type="number" inputmode="numeric" min="0" style="width:56px"></td><td><input id="r${i}" size="10"></td></tr>`).join('')}</table></div>
-  <p>ตำหนิ = มีคราบ/ชำรุด รอส่งซักซ้ำ · ที่เหลือไม่ได้รับคืนและไม่ตำหนิ = ไม่ได้รับ (ระบบเปิดเคสให้อัตโนมัติ)</p>
+  <div class="ov"><table><tr><th>รายการ</th><th>ค้างรับ</th><th>รับ(ดี)</th><th>ตำหนิ</th><th>หาย</th><th>หมายเหตุ</th></tr>${ks.map(i=>`<tr><td class="l">${nm(i)}</td><td><b>${outst(s,i)}</b></td>
+   <td><input id="g${i}" type="number" inputmode="numeric" min="0" style="width:56px"></td><td><input id="d${i}" type="number" inputmode="numeric" min="0" style="width:56px"></td><td><input id="l${i}" type="number" inputmode="numeric" min="0" style="width:56px"></td><td><input id="r${i}" size="10"></td></tr>`).join('')}</table></div>
+  <p>ตำหนิ = มีคราบ/ชำรุด รอส่งซักซ้ำ · หาย = ร้านซักแจ้งว่าผ้าสูญหาย · ที่เหลือไม่ได้รับคืนและไม่ตำหนิ/หาย = ไม่ได้รับ (ระบบเปิดเคสให้อัตโนมัติ ทุกเคสไปแสดงที่แอดมิน)</p>
   <div class="sg"><div>ผู้รับ (แม่บ้าน/แอดมิน)${pad('ra')}</div><div>ร้านซัก${pad('rb')}</div></div>
   <button class="p" onclick="saveRet('${s.id}')">บันทึกการรับ + แชร์ไฟล์ A4 (PDF)</button></div>
   <div class="card"><h3>ใบรับผ้าล่าสุด</h3>${S.rets.slice(-8).reverse().map(r=>{const x=S.sends.find(y=>y.id==r.sendId)||{};return `<div style="padding:4px 0">${x.no||''} · ${r.date} · รับ ${sum(Object.values(r.g))} ชิ้น <button class="s" onclick="openPdf('ret',null,S.rets.find(y=>y.id=='${r.id}'))">📄 เปิด PDF A4</button></div>`}).join('')||'-'}</div>`};
-function saveRet(sid){const s=S.sends.find(x=>x.id==sid),g={},d={},rn={};let bad=0;
-  Object.keys(s.lines).forEach(i=>{const a=$('g'+i);if(!a)return;g[i]=+a.value||0;d[i]=+$('d'+i).value||0;rn[i]=$('r'+i).value;if(g[i]>outst(s,i))bad=1});
+function saveRet(sid){const s=S.sends.find(x=>x.id==sid),g={},d={},l={},rn={};let bad=0;
+  Object.keys(s.lines).forEach(i=>{const a=$('g'+i);if(!a)return;g[i]=+a.value||0;d[i]=+$('d'+i).value||0;l[i]=+$('l'+i).value||0;rn[i]=$('r'+i).value;if(g[i]>outst(s,i))bad=1});
   if(bad)return alert('จำนวนรับเกินยอดค้าง');const ra=sg('ra'),rb=sg('rb');if(!ra||!rb)return alert('ต้องเซ็นทั้งสองฝ่าย');
-  const r={id:uid(),sendId:sid,date:today(),g,d,rn,ra,rb};up('rets',r);
-  r.m={};Object.keys(g).forEach(i=>{const out=outst(s,i),dd=Math.min(d[i]||0,out),m=out-dd;r.m[i]=m;
-    [['ตำหนิ',dd],['ไม่ได้รับ',m]].forEach(([t,q])=>{const c=S.cases.find(c=>c.sendId==sid&&c.item==i&&(c.t==t||(t=='ไม่ได้รับ'&&c.t=='ขาด'))&&c.st=='open');
-      if(c){c.q=q;if(!q){c.st='closed';c.kind='auto'}up('cases',c)}else if(q)up('cases',{id:uid(),sendId:sid,item:i,t,q,st:'open',date:today()})})});
-  up('rets',r);chk(s);const rows=Object.keys(g).filter(i=>g[i]||d[i]).map(i=>`${nm(i)}: รับ ${g[i]} ตำหนิ ${d[i]}${rn[i]?' ('+rn[i]+')':''}`);render();
+  const r={id:uid(),sendId:sid,date:today(),g,d,l,rn,ra,rb};up('rets',r);
+  r.m={};Object.keys(g).forEach(i=>{const out=outst(s,i),dd=Math.min(d[i]||0,out),ll=Math.min(l[i]||0,out-dd),m=out-dd-ll;r.m[i]=m;l[i]=ll;
+    [['ตำหนิ',dd],['หาย',ll],['ไม่ได้รับ',m]].forEach(([t,q])=>{const c=S.cases.find(c=>c.sendId==sid&&c.item==i&&(c.t==t||(t=='ไม่ได้รับ'&&c.t=='ขาด'))&&c.st=='open');
+      if(c){c.q=q;if(!q){c.st='closed';c.kind='auto'}up('cases',c)}else if(q)up('cases',{id:uid(),src:'shop',sendId:sid,item:i,t,q,st:'open',date:today()})})});
+  up('rets',r);chk(s);const rows=Object.keys(g).filter(i=>g[i]||d[i]).map(i=>`${nm(i)}: รับ ${g[i]} ตำหนิ ${d[i]} หาย ${l[i]}${rn[i]?' ('+rn[i]+')':''}`);render();
   shareDoc('ret',null,r)}
 function chk(s){s.st=Object.keys(s.lines).some(i=>outst(s,i)>0)?'open':'closed';up('sends',s)}
 function closeCase(id,kind){const c=S.cases.find(x=>x.id==id);let amt=0;
   if(kind=='ชดใช้'){const v=prompt('จำนวนเงินชดใช้ (บาท)','');if(v===null)return;amt=+v;if(!(amt>0))return alert('กรุณากรอกจำนวนเงินชดใช้เป็นตัวเลขมากกว่า 0 — ยังไม่ปิดเคส')}
-  c.st='closed';c.kind=kind;c.cdate=today();c.amt=amt;up('cases',c);chk(S.sends.find(x=>x.id==c.sendId));render()}
+  c.st='closed';c.kind=kind;c.cdate=today();c.amt=amt;up('cases',c);const sd=S.sends.find(x=>x.id==c.sendId);if(sd)chk(sd);render()}
 
 // ---- 2. แอดมิน ----
 V.admin=()=>{const m=D.m,inM=d=>(d||'').slice(0,7)==m,
@@ -287,21 +287,29 @@ V.admin=()=>{const m=D.m,inM=d=>(d||'').slice(0,7)==m,
   ${Sm.map(s=>`<tr><td class="l">${s.no}</td><td>${s.date}</td><td class="l">${esc(s.co||'-')}</td><td>${sum(Object.values(s.lines))}</td><td><input type="number" inputmode="decimal" value="${+s.cost||''}" placeholder="0" style="width:100px;text-align:right" onchange="editCost('${s.id}',this.value)"></td></tr>`).join('')||'<tr><td colspan="5">ไม่มีใบส่งซักในเดือนนี้</td></tr>'}
   <tr><td colspan="4" class="l"><b>รวมค่าซัก</b></td><td><b>${cost.toLocaleString()}</b></td></tr></table></div></div>`,
   `<div class="card"><h3>ค่าใช้จ่ายอื่น (กรอกเอง) — ${m}</h3><div class="ov"><table><tr><th>วันที่</th><th>รายการ</th><th style="width:110px">จำนวนเงิน (บาท)</th><th style="width:50px"></th></tr>
-  ${man.map(x=>`<tr><td><input type="date" value="${x.date}" onchange="editMan('${x.id}','date',this.value)"></td><td><input value="${esc(x.label)}" style="width:100%" onchange="editMan('${x.id}','label',this.value)"></td><td><input type="number" inputmode="decimal" value="${+x.amt||0}" style="width:100px;text-align:right" onchange="editMan('${x.id}','amt',this.value)"></td><td><button class="s" onclick="delMan('${x.id}')">ลบ</button></td></tr>`).join('')}
+  ${man.map(x=>`<tr><td><input type="date" value="${x.date}" onchange="editMan('${x.id}','date',this.value)"></td><td><input value="${esc(x.label)}" style="width:100%" onchange="editMan('${x.id}','label',this.value)"></td><td><input type="number" inputmode="decimal" value="${+x.amt||0}" style="width:100px;text-align:right" onchange="editMan('${x.id}','amt',this.value)"></td><td><button class="s" style="color:#b42318" onclick="delMan('${x.id}')">ลบ</button></td></tr>`).join('')}
   <tr style="background:#f6f8f9"><td><input id="mn_d" type="date" value="${inM(today())?today():m+'-01'}"></td><td><input id="mn_l" placeholder="รายการใหม่" style="width:100%"></td><td><input id="mn_a" type="number" inputmode="decimal" placeholder="0" style="width:100px;text-align:right"></td><td><button class="s" onclick="addMan()">+ เพิ่ม</button></td></tr>
   <tr><td colspan="2" class="l"><b>รวม</b></td><td><b>${mans.toLocaleString()}</b></td><td></td></tr></table></div></div>`,
-  `<div class="card"><h3>เคสตำหนิ/ไม่ได้รับที่ยังไม่ปิด (${O.length})</h3>${O.map(c=>{const s=S.sends.find(x=>x.id==c.sendId)||{};return `<div style="padding:6px 0;border-bottom:1px solid #eee">${s.no||''} · ${nm(c.item)} · <span class="tag">${c.t=='ขาด'?'ไม่ได้รับ':c.t} ${c.q}</span><br>
+  `<div class="card"><h3>เคสตำหนิ / หาย / ไม่ได้รับ ที่ยังไม่ปิด (${O.length})</h3>${O.map(c=>{const s=S.sends.find(x=>x.id==c.sendId)||{};return `<div style="padding:6px 0;border-bottom:1px solid #eee">${cSrc(c)} · ${nm(c.item)} · <span class="tag">${cT(c)} ${c.q}</span>${c.note?' · '+esc(c.note):''} <small>${c.date}${c.by?' · '+esc(c.by):''}</small><br>
    <button class="s" onclick="closeCase('${c.id}','ได้คืนแล้ว')">ปิด: ได้คืน</button> <button class="s" onclick="closeCase('${c.id}','ชดใช้')">ปิด: ชดใช้</button></div>`}).join('')||'ไม่มี'}</div>`,
   `<div class="card"><h3>รายวัน</h3><div class="ov"><table><tr><th>วันที่</th><th>เก็บ</th><th>ส่งซัก</th></tr>${days.map(d=>`<tr><td>${d}</td><td>${sum(Lm.filter(l=>l.date==d).map(l=>sum(Object.values(l.q))))}</td><td>${sum(Sm.filter(s=>s.date==d).map(s=>sum(Object.values(s.lines))))}</td></tr>`).join('')}</table></div></div>`,
   `<div class="card"><h3>ล้างข้อมูล / เริ่มต้นใหม่</h3>
   <p><small>สำรองข้อมูลเป็นไฟล์ก่อนล้างได้ · การล้างจะลบข้อมูลใน Google Sheet และในเครื่องทุกเครื่องที่ซิงก์ ย้อนกลับไม่ได้</small></p>
   <button class="p" style="background:#334155" onclick="backup()">⬇ ดาวน์โหลดสำรองข้อมูล (JSON)</button>
   <button class="p" style="background:#b45309" onclick="resetData('data')">ล้างข้อมูลการใช้งาน (เก็บราคา/สต็อก/par)</button>
-  <button class="p" style="background:#b42318" onclick="resetData('all')">รีเซ็ตทั้งหมด กลับเป็นค่าเริ่มต้น</button></div>`],
-  G={sum:[0,1,5],cost:[2,3],case:[4],reset:[6]},A=G[D.at]?D.at:'sum',
-  TB=[['sum','สรุปเดือน'],['cost','ค่าซัก / ค่าใช้จ่าย'],['case','เคสค้าง'+(O.length?' ('+O.length+')':'')],['reset','ล้างข้อมูล']];
+  <button class="p" style="background:#b42318" onclick="resetData('all')">รีเซ็ตทั้งหมด กลับเป็นค่าเริ่มต้น</button></div>`,
+  `${O.length?`<div class="card" style="border-left:5px solid #b42318"><b>⚠ มีผ้าที่ยังไม่ปิดเคส: ตำหนิ ${sum(O.filter(c=>cT(c)=='ตำหนิ').map(c=>c.q))} · หาย ${sum(O.filter(c=>cT(c)=='หาย').map(c=>c.q))} · ไม่ได้รับ ${sum(O.filter(c=>cT(c)=='ไม่ได้รับ').map(c=>c.q))} ชิ้น</b> <button class="s" onclick="D.at='case';render()">ดูรายละเอียด</button></div>`:''}`,
+  `${(()=>{const I=items(),Cm=S.cases.filter(c=>inM(c.date)&&c.q>0),R=(it,sr,t)=>sum(Cm.filter(c=>c.item==it.id&&(c.src||'shop')==sr&&cT(c)==t).map(c=>c.q)),
+   rows=I.filter(it=>Cm.some(c=>c.item==it.id)),C=[['shop','ตำหนิ'],['shop','หาย'],['shop','ไม่ได้รับ'],['hk','ตำหนิ'],['hk','หาย']];
+   return `<div class="card"><h3>รายงานผ้าตำหนิ / หาย — ${m}</h3><div class="ov"><table><tr><th rowspan="2">รายการ</th><th colspan="3">จากร้านซัก</th><th colspan="2">จากแม่บ้าน</th><th rowspan="2">รวม</th></tr><tr><th>ตำหนิ</th><th>หาย</th><th>ไม่ได้รับ</th><th>ตำหนิ</th><th>หาย</th></tr>
+   ${rows.map(it=>`<tr><td class="l">${it.n}</td>${C.map(([a,b])=>`<td>${R(it,a,b)||''}</td>`).join('')}<td><b>${sum(Cm.filter(c=>c.item==it.id).map(c=>c.q))}</b></td></tr>`).join('')||'<tr><td colspan="7">ไม่มีเคสในเดือนนี้</td></tr>'}
+   <tr><td class="l"><b>รวม</b></td>${C.map(([a,b])=>`<td><b>${sum(I.map(it=>R(it,a,b)))||''}</b></td>`).join('')}<td><b>${sum(Cm.map(c=>c.q))}</b></td></tr></table></div></div>
+   <div class="card"><h3>รายการเคสเดือน ${m}</h3>${Cm.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(c=>`<div style="padding:5px 0;border-bottom:1px solid #eee">${c.date} · ${cSrc(c)} · ${nm(c.item)} · <span class="tag ${c.st=='closed'?'ok':''}">${cT(c)} ${c.q}</span> ${c.st=='closed'?'ปิดแล้ว ('+(c.kind||'')+(c.amt?' '+c.amt+' บาท':'')+')':'ยังไม่ปิด'}${c.note?' · '+esc(c.note):''}</div>`).join('')||'-'}</div>`})()}`,
+  `${V.rep()}`],
+  G={sum:[7,0,1,5],cost:[2,3],case:[4,8],reset:[6],rep:[9]},A=G[D.at]?D.at:'sum',
+  TB=[['sum','สรุปเดือน'],['cost','ค่าซัก / ค่าใช้จ่าย'],['case','ตำหนิ / หาย'+(O.length?' ('+O.length+')':'')],['rep','รายงานหลายเดือน'],['reset','ล้างข้อมูล']];
   return `<div class="card"><div class="chips" style="margin:0">${TB.map(([k,n])=>`<button class="chip" style="background:${k==A?'#14323f':'#e5e8eb'};color:${k==A?'#fff':'#1a1d21'}" onclick="D.at='${k}';render()">${n}</button>`).join('')}</div>
-  ${A=='sum'||A=='cost'?`<p style="margin:8px 0 0">เดือน <input type="month" value="${m}" onchange="D.m=this.value;render()"> ${cl?'<span class="tag ok">ปิดยอดแล้ว</span>':''}</p>`:''}</div>
+  ${A!='reset'&&A!='rep'?`<p style="margin:8px 0 0">เดือน <input type="month" value="${m}" onchange="D.m=this.value;render()"> ${cl?'<span class="tag ok">ปิดยอดแล้ว</span>':''}</p>`:''}</div>
   ${G[A].map(i=>CARDS[i]).join('')}`};
 function backup(){const b=new Blob([JSON.stringify(S,null,1)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='laundry-backup-'+today()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),3000)}
 async function resetData(mode){const all=mode=='all';
@@ -317,6 +325,7 @@ async function resetData(mode){const all=mode=='all';
     if(!r.ok)return alert('ล้างไม่สำเร็จ ลองใหม่อีกครั้ง (ข้อมูลยังไม่ถูกลบ)')}
   Q=[];['logs','sends','rets','cases','manual','closes'].concat(all?['cfg']:[]).forEach(c=>S[c]=[]);
   D={z:0,q:{},n:{},m:today().slice(0,7)};localStorage.removeItem('DQ');save();render();alert('ล้างข้อมูลเรียบร้อย')}
+const cT=c=>c.t=='ขาด'?'ไม่ได้รับ':c.t,cSrc=c=>c.src=='hk'?'แม่บ้าน '+(Z[c.z]||''):'ร้านซัก '+((S.sends.find(x=>x.id==c.sendId)||{}).no||'');
 const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
 function editCost(id,v){const s=S.sends.find(x=>x.id==id);if(!s)return;s.cost=+v||0;up('sends',s);render()}
 function addMan(){const label=$('mn_l').value.trim(),amt=+$('mn_a').value||0,date=$('mn_d').value||today();
@@ -325,24 +334,132 @@ function editMan(id,f,v){const x=S.manual.find(y=>y.id==id);if(!x)return;x[f]=f=
 function delMan(id){const x=S.manual.find(y=>y.id==id);if(!x||!confirm('ลบรายการ '+(x.label||'')+' ?'))return;x.del=1;up('manual',x);render()}
 function closeM(col,snt,cost,man,comp){const m=D.m;if(!confirm('ปิดยอดเดือน '+m+'?'))return;up('closes',{id:'m'+m,month:m,collected:col,sent:snt,cost,manual:man,comp,ts:Date.now()});render()}
 
+// ---- แจ้งผ้าตำหนิ / ผ้าหาย (แม่บ้าน) ----
+V.dmg=()=>{const I=items(),L=S.cases.filter(c=>c.src=='hk').slice(-15).reverse();
+  return `<div class="card"><h3>แจ้งผ้าตำหนิ / ผ้าหาย (จากแม่บ้าน)</h3>
+  <p><small>ใช้แจ้งผ้าที่พบตำหนิหรือหายระหว่างใช้งานตามชั้น · ผ้าที่ส่งซักแล้วตำหนิ/หาย ให้บันทึกในแท็บ "รับคืน"</small></p>
+  <p>วันที่ <input id="dm_d" type="date" value="${today()}"> ผู้แจ้ง <input id="dm_by" size="10" value="${esc(D.by||'')}" oninput="D.by=this.value"></p>
+  <p>ชั้น <select id="dm_z">${Z.map((z,i)=>`<option value="${i}">${z}</option>`).join('')}</select> ประเภท <select id="dm_t"><option>ตำหนิ</option><option>หาย</option></select></p>
+  <p><select id="dm_i" style="width:100%">${I.map(it=>`<option value="${it.id}">${esc(it.n)}</option>`).join('')}</select></p>
+  <p>จำนวน <input id="dm_q" type="number" inputmode="numeric" min="1" style="width:70px"> หมายเหตุ <input id="dm_n" placeholder="เช่น ห้อง 305 มีคราบ" style="width:100%"></p>
+  <button class="p" onclick="addDmg()">บันทึกการแจ้ง</button></div>
+  <div class="card"><h3>รายการแจ้งล่าสุด</h3>${L.map(c=>`<div style="padding:5px 0;border-bottom:1px solid #eee">${c.date} · ${Z[c.z]||''} · ${nm(c.item)} · <span class="tag ${c.st=='closed'?'ok':''}">${c.t} ${c.q}</span> ${c.st=='closed'?'ปิดแล้ว':'รอแอดมินตรวจสอบ'}${c.note?' · '+esc(c.note):''}</div>`).join('')||'-'}</div>`};
+function addDmg(){const q=+$('dm_q').value||0;if(q<=0)return alert('กรอกจำนวน');
+  up('cases',{id:uid(),src:'hk',z:+$('dm_z').value,item:$('dm_i').value,t:$('dm_t').value,q,st:'open',date:$('dm_d').value||today(),note:$('dm_n').value.trim(),by:D.by||''});render();alert('บันทึกการแจ้งแล้ว')}
+
+// ---- รายงานสรุปหลายเดือน (เจ้าของ / ผู้จัดการ / บัญชี) ----
+const shiftM=(m,k)=>{let[y,n]=m.split('-').map(Number);n+=k;while(n<1){n+=12;y--}while(n>12){n-=12;y++}return y+'-'+String(n).padStart(2,'0')},
+  rF=()=>D.rf||shiftM(today().slice(0,7),-5),rT=()=>D.rt||today().slice(0,7),
+  monthsBetween=(f,t)=>{const o=[];for(let m=f;m<=t&&o.length<60;m=shiftM(m,1))o.push(m);return o};
+function repModel(f,t){
+  const ms=monthsBetween(f,t),I=items(),pc=l=>sum(Object.values(l.q)),
+  R=ms.map(m=>{const inM=d=>(d||'').slice(0,7)==m,Lm=S.logs.filter(l=>inM(l.date)),Sm=S.sends.filter(s=>inM(s.date)),cl=S.closes.find(x=>x.id=='m'+m),
+    Cm=S.cases.filter(c=>inM(c.date)&&c.q>0),k=(sr,tp)=>sum(Cm.filter(c=>(c.src||'shop')==sr&&cT(c)==tp).map(c=>c.q)),
+    live={col:sum(Lm.map(pc)),snt:sum(Sm.map(s=>sum(Object.values(s.lines)))),cost:sum(Sm.map(s=>+s.cost||0)),
+      mans:sum(S.manual.filter(x=>inM(x.date)&&!x.del).map(x=>+x.amt||0)),comp:sum(S.cases.filter(c=>c.kind=='ชดใช้'&&inM(c.cdate)).map(c=>+c.amt||0))},
+    b=cl?{col:+cl.collected||0,snt:+cl.sent||0,cost:+cl.cost||0,mans:+cl.manual||0,comp:+cl.comp||0}:live;
+    return {m,closed:!!cl,n:Sm.length,...b,tot:b.cost+b.mans,pp:b.snt?b.cost/b.snt:0,sd:k('shop','ตำหนิ'),sl:k('shop','หาย'),sn:k('shop','ไม่ได้รับ'),hd:k('hk','ตำหนิ'),hl:k('hk','หาย')}}),
+  T={};['col','n','snt','cost','mans','comp','tot','sd','sl','sn','hd','hl'].forEach(k=>T[k]=sum(R.map(r=>r[k])));T.pp=T.snt?T.cost/T.snt:0;
+  const IM=I.map(it=>{const v=ms.map(m=>sum(S.logs.filter(l=>(l.date||'').slice(0,7)==m).map(l=>l.q[it.id]||0)));return {n:it.n,v,t:sum(v)}}),
+    oc=S.cases.filter(c=>c.st=='open'&&c.q>0);
+  return {kind:'rep',f,t,ms,R,T,IM,open:{n:oc.length,q:sum(oc.map(c=>c.q))},no:'RPT'+f.replace('-','')+'_'+t.replace('-',''),title:'รายงานสรุปผ้าซัก '+f+' ถึง '+t}}
+V.rep=()=>{const f=rF(),t=rT(),M=repModel(f,t),T=M.T,fm=v=>Math.round(v).toLocaleString();
+  return `<div class="card"><h3>รายงานสรุปหลายเดือน</h3>
+  <p>ตั้งแต่ <input type="month" value="${f}" onchange="D.rf=this.value;render()"> ถึง <input type="month" value="${t}" onchange="D.rt=this.value;render()"> (${M.ms.length} เดือน)</p>
+  ${M.ms.length?`<div class="k"><div>ผ้าที่เก็บ (ชิ้น)<b>${fm(T.col)}</b></div><div>ส่งซัก (ชิ้น)<b>${fm(T.snt)}</b></div><div>ค่าซักรวม (บาท)<b>${fm(T.cost)}</b></div><div>ค่าใช้จ่ายอื่น (บาท)<b>${fm(T.mans)}</b></div><div>รวมรายจ่าย (บาท)<b>${fm(T.tot)}</b></div><div>ค่าซักต่อชิ้น (บาท)<b>${T.pp.toFixed(2)}</b></div></div>
+  <div class="ov" style="margin-top:10px"><table><tr><th>เดือน</th><th>สถานะ</th><th>เก็บ</th><th>ส่งซัก (ครั้ง)</th><th>ส่งซัก (ชิ้น)</th><th>ค่าซัก</th><th>อื่นๆ</th><th>รวมรายจ่าย</th><th>ค่าซัก/ชิ้น</th><th>ชดใช้</th></tr>
+  ${M.R.map(r=>`<tr><td>${r.m}</td><td>${r.closed?'<span class="tag ok">ปิดยอด</span>':'<span class="tag">ชั่วคราว</span>'}</td><td>${fm(r.col)}</td><td>${r.n}</td><td>${fm(r.snt)}</td><td>${fm(r.cost)}</td><td>${fm(r.mans)}</td><td><b>${fm(r.tot)}</b></td><td>${r.pp?r.pp.toFixed(2):'-'}</td><td>${r.comp?fm(r.comp):'-'}</td></tr>`).join('')}
+  <tr><td colspan="2"><b>รวม</b></td><td><b>${fm(T.col)}</b></td><td><b>${T.n}</b></td><td><b>${fm(T.snt)}</b></td><td><b>${fm(T.cost)}</b></td><td><b>${fm(T.mans)}</b></td><td><b>${fm(T.tot)}</b></td><td><b>${T.pp.toFixed(2)}</b></td><td><b>${fm(T.comp)}</b></td></tr></table></div>
+  <p><small>เดือนที่ "ชั่วคราว" = ยังไม่ได้กดปิดยอดเดือน · ค่าซักนับตามวันที่ส่งซัก · ตำหนิ/หายนับตามวันที่เปิดเคส · PDF แสดงได้สูงสุด 12 เดือน (CSV ไม่จำกัด)</small></p>`:'<p>เลือกช่วงเดือนให้ถูกต้อง (เดือนเริ่ม ≤ เดือนสิ้นสุด)</p>'}
+  <button class="p" onclick="repPdf('share')">แชร์ PDF A4 (LINE) — เจ้าของ/ผู้จัดการ</button>
+  <button class="p" style="background:#334155" onclick="repPdf('open')">📄 เปิด PDF A4</button>
+  <button class="p" style="background:#0e7490" onclick="repCsv()">⬇ ดาวน์โหลด CSV (Excel) — บัญชี</button></div>`};
+async function repCanvas(M){
+  const W=2339,H=1654,K=W/297,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d'),
+    FF='"Sarabun","TH Sarabun New","Noto Sans Thai","Thonburi",sans-serif',MX=8,CW=281,PH=H/K,fm=v=>Math.round(v).toLocaleString('en-US');
+  if(document.fonts&&document.fonts.ready)await document.fonts.ready;
+  const hdr=await new Promise(res=>{const i=new Image();i.onload=()=>res(i);i.onerror=()=>res(null);i.src=HDR});
+  x.fillStyle='#fff';x.fillRect(0,0,W,H);
+  const tx=(t,px,py,s,al,b,col)=>{x.font=`${b?'bold ':''}${s*K}px ${FF}`;x.fillStyle=col||'#000';x.textAlign=al||'left';x.textBaseline='middle';x.fillText(String(t),px*K,py*K)},
+    rc=(px,py,w,h,fill,st)=>{if(fill){x.fillStyle=fill;x.fillRect(px*K,py*K,w*K,h*K)}if(st){x.lineWidth=.26*K;x.strokeStyle='#000';x.strokeRect(px*K,py*K,w*K,h*K)}},
+    fit=(t,w,s)=>{x.font=`${s*K}px ${FF}`;t=String(t);if(x.measureText(t).width<=w*K)return t;while(t.length>1&&x.measureText(t+'…').width>w*K)t=t.slice(0,-1);return t+'…'};
+  const {R,T}=M,n=R.length;let y=7;
+  if(hdr){const hh=CW*92/1400;x.drawImage(hdr,MX*K,y*K,CW*K,hh*K);y+=hh+2}
+  tx('รายงานสรุปผ้าซักโรงแรม ย้อนหลังรายเดือน',MX+CW/2,y+4,6.2,'center',1);y+=9;
+  tx(`ช่วงเดือน ${M.f} ถึง ${M.t} (${n} เดือน) · พิมพ์วันที่ ${today()}`,MX+CW/2,y+1.5,3.6,'center');y+=6;
+  const kp=[['ผ้าที่เก็บ (ชิ้น)',fm(T.col)],['ส่งซัก (ชิ้น)',fm(T.snt)],['ค่าซักรวม (บาท)',fm(T.cost)],['ค่าใช้จ่ายอื่น (บาท)',fm(T.mans)],['รวมรายจ่าย (บาท)',fm(T.tot)],['ค่าซักต่อชิ้น (บาท)',T.pp.toFixed(2)]],kw=(CW-10)/6;
+  kp.forEach(([l,v],i)=>{const kx=MX+i*(kw+2);rc(kx,y,kw,13,'#f1f3f5',1);tx(l,kx+kw/2,y+3.6,3.2,'center',0,'#444');tx(v,kx+kw/2,y+9,6,'center',1)});
+  y+=16;
+  const BH=50,rh=Math.min(6.5,(PH-y-(BH+4+6+7))/(n+3)),fs=rh*.58,
+    C=[['เดือน',24],['สถานะ',24],['เก็บผ้า (ชิ้น)',24],['ส่งซัก (ครั้ง)',18],['ส่งซัก (ชิ้น)',24],['ค่าซัก (บาท)',28],['ค่าใช้จ่ายอื่น (บาท)',32],['รวมรายจ่าย (บาท)',32],['ค่าซัก/ชิ้น',22],['ชดใช้ (บาท)',26]],
+    sc=CW/C.reduce((a,b)=>a+b[1],0),cw=C.map(v=>v[1]*sc),cx=[MX];cw.forEach(v=>cx.push(cx[cx.length-1]+v));
+  const row=(vals,fill,bold,col,stc)=>{vals.forEach((v,i)=>{rc(cx[i],y,cw[i],rh,fill,1);const ctr=i<2;tx(v,ctr?cx[i]+cw[i]/2:cx[i]+cw[i]-2,y+rh/2,fs,ctr?'center':'right',bold,i==1&&stc?stc:col)});y+=rh};
+  row(C.map(v=>v[0]),'#14323f',1,'#fff');
+  R.forEach((r,k)=>row([r.m,r.closed?'ปิดยอดแล้ว':'ชั่วคราว',fm(r.col),r.n,fm(r.snt),fm(r.cost),fm(r.mans),fm(r.tot),r.pp?r.pp.toFixed(2):'-',r.comp?fm(r.comp):'-'],k%2?'#f6f8f9':'#fff',0,'#000',r.closed?'#0e7c66':'#b45309'));
+  row(['รวม','',fm(T.col),T.n,fm(T.snt),fm(T.cost),fm(T.mans),fm(T.tot),T.pp.toFixed(2),fm(T.comp)],'#e5e8eb',1,'#000');
+  row(['เฉลี่ย/เดือน','',fm(T.col/n),(T.n/n).toFixed(1),fm(T.snt/n),fm(T.cost/n),fm(T.mans/n),fm(T.tot/n),'',fm(T.comp/n)],'#fff',0,'#000');
+  const y0=Math.max(y+4,PH-7-6-BH);
+  // กราฟแท่ง: ค่าซัก + ค่าใช้จ่ายอื่น
+  const p1=108;rc(MX,y0,p1,BH,null,1);tx('ค่าใช้จ่ายรายเดือน (บาท)',MX+3,y0+4,3.6,'left',1);
+  const gx=MX+4,gw=p1-8,gy=y0+10,gh=BH-10-8,mx=Math.max(1,...R.map(r=>r.tot)),slot=gw/n,bw=Math.min(slot*.6,12);
+  R.forEach((r,i)=>{const bx=gx+i*slot+(slot-bw)/2,h1=r.cost/mx*gh,h2=r.mans/mx*gh;rc(bx,gy+gh-h1,bw,h1,'#0e7c66');rc(bx,gy+gh-h1-h2,bw,h2,'#c2410c');
+    if(r.tot)tx(fm(r.tot),bx+bw/2,gy+gh-h1-h2-1.8,2.6,'center');tx(r.m.slice(2),bx+bw/2,gy+gh+3,2.6,'center')});
+  rc(MX+p1-42,y0+2.2,2.6,2.6,'#0e7c66');tx('ค่าซัก',MX+p1-38.8,y0+3.6,2.8);rc(MX+p1-24,y0+2.2,2.6,2.6,'#c2410c');tx('ค่าใช้จ่ายอื่น',MX+p1-20.8,y0+3.6,2.8);
+  // ตำหนิ / หาย
+  const p2x=MX+p1+4,p2=84;rc(p2x,y0,p2,BH,null,1);tx('ผ้าตำหนิ / หาย (ชิ้น) ในช่วงนี้',p2x+3,y0+4,3.6,'left',1);
+  const q=[['ที่มา',0],['ตำหนิ',1],['หาย',2],['ไม่ได้รับ',3]],qw=[26,16,16,20],qx=[p2x+3];qw.forEach(v=>qx.push(qx[qx.length-1]+v));
+  [[['ที่มา','ตำหนิ','หาย','ไม่ได้รับ'],1],[['ร้านซัก',T.sd,T.sl,T.sn],0],[['แม่บ้าน',T.hd,T.hl,'-'],0]].forEach(([v,b],i)=>{v.forEach((t,j)=>{rc(qx[j],y0+8+i*6,qw[j],6,b?'#e5e8eb':null,1);tx(t,j?qx[j]+qw[j]-2:qx[j]+2,y0+11+i*6,3.3,j?'right':'left',b)})});
+  tx(`เงินชดใช้ในช่วงนี้: ${fm(T.comp)} บาท`,p2x+3,y0+30,3.4);
+  tx(`ยังไม่ปิดเคส (ทั้งหมด ณ วันนี้): ${M.open.n} เคส / ${M.open.q} ชิ้น`,p2x+3,y0+37,3.4,'left',M.open.n>0,M.open.n>0?'#b42318':'#000');
+  // ผ้าที่ใช้มาก
+  const p3x=p2x+p2+4,p3=MX+CW-p3x;rc(p3x,y0,p3,BH,null,1);tx('ผ้าที่เก็บมากสุด 7 อันดับ (ชิ้น)',p3x+3,y0+4,3.6,'left',1);
+  M.IM.slice().sort((a,b)=>b.t-a.t).slice(0,7).forEach((it,i)=>{const ry=y0+10+i*5.5;tx(fit(it.n,p3-22,3.1),p3x+3,ry,3.1);tx(fm(it.t),p3x+p3-3,ry,3.1,'right',1)});
+  tx('ค่าซักนับตามวันที่ส่งซัก · ตำหนิ/หายนับตามวันที่เปิดเคส · เดือนที่ "ชั่วคราว" = ยังไม่ปิดยอดเดือน',MX,PH-4.5,2.8,'left',0,'#555');
+  return c}
+async function repPdf(mode){const M=repModel(rF(),rT());
+  if(!M.ms.length)return alert('เลือกช่วงเดือนไม่ถูกต้อง');
+  if(M.ms.length>12)return alert('PDF แสดงได้สูงสุด 12 เดือน — เลือกช่วงให้สั้นลง หรือใช้ไฟล์ CSV');
+  const w=mode=='open'?open('','_blank'):null;if(w)w.document.write('<p style="font:16px sans-serif;padding:20px">กำลังสร้าง PDF…</p>');
+  try{const b=await makePdf(M),name=M.no+'.pdf';
+    if(mode=='open'){const u=URL.createObjectURL(b);if(w)w.location.href=u;else{const l=document.createElement('a');l.href=u;l.download=name;l.click()}setTimeout(()=>URL.revokeObjectURL(u),120000)}
+    else{const f=new File([b],name,{type:'application/pdf'});
+      if(navigator.canShare&&navigator.canShare({files:[f]}))await navigator.share({files:[f],title:M.title}).catch(()=>{});
+      else{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),3000)}}}
+  catch(e){if(w)w.close();alert('สร้างไฟล์ PDF ไม่สำเร็จ')}}
+function repCsv(){const M=repModel(rF(),rT());if(!M.ms.length)return alert('เลือกช่วงเดือนไม่ถูกต้อง');
+  const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"',row=a=>a.map(q).join(','),o=[],inR=d=>{const m=(d||'').slice(0,7);return m>=M.f&&m<=M.t},T=M.T;
+  o.push(row(['สรุปรายเดือน',M.f,M.t]));
+  o.push(row(['เดือน','สถานะ','เก็บผ้า(ชิ้น)','ส่งซัก(ครั้ง)','ส่งซัก(ชิ้น)','ค่าซัก(บาท)','ค่าใช้จ่ายอื่น(บาท)','รวมรายจ่าย(บาท)','ค่าซักต่อชิ้น','ชดใช้(บาท)','ร้านซัก-ตำหนิ','ร้านซัก-หาย','ร้านซัก-ไม่ได้รับ','แม่บ้าน-ตำหนิ','แม่บ้าน-หาย']));
+  M.R.forEach(r=>o.push(row([r.m,r.closed?'ปิดยอดแล้ว':'ชั่วคราว',r.col,r.n,r.snt,r.cost,r.mans,r.tot,r.pp.toFixed(2),r.comp,r.sd,r.sl,r.sn,r.hd,r.hl])));
+  o.push(row(['รวม','',T.col,T.n,T.snt,T.cost,T.mans,T.tot,T.pp.toFixed(2),T.comp,T.sd,T.sl,T.sn,T.hd,T.hl]));
+  o.push('',row(['ใบส่งซัก']),row(['เลขที่','วันที่ส่ง','ร้านซัก','ชิ้น','ค่าซัก(บาท)','สถานะ']));
+  S.sends.filter(s=>inR(s.date)).sort((a,b)=>(a.date||'').localeCompare(b.date||'')).forEach(s=>o.push(row([s.no,s.date,s.co,sum(Object.values(s.lines)),+s.cost||0,s.st=='closed'?'ปิดงาน':'ค้างรับ'])));
+  o.push('',row(['ค่าใช้จ่ายอื่น']),row(['วันที่','รายการ','จำนวนเงิน(บาท)']));
+  S.manual.filter(x=>!x.del&&inR(x.date)).sort((a,b)=>(a.date||'').localeCompare(b.date||'')).forEach(x=>o.push(row([x.date,x.label,+x.amt||0])));
+  o.push('',row(['ผ้าตำหนิ / หาย']),row(['วันที่เปิดเคส','ที่มา','รายการ','ประเภท','จำนวน','สถานะ','ปิดแบบ','เงินชดใช้(บาท)','หมายเหตุ']));
+  S.cases.filter(c=>inR(c.date)&&c.q>0).sort((a,b)=>(a.date||'').localeCompare(b.date||'')).forEach(c=>o.push(row([c.date,cSrc(c),nm(c.item),cT(c),c.q,c.st=='closed'?'ปิดแล้ว':'ยังไม่ปิด',c.kind||'',c.amt||'',c.note||''])));
+  o.push('',row(['ผ้าที่เก็บ รายชนิด รายเดือน (ชิ้น)']),row(['รายการ',...M.ms,'รวม']));
+  M.IM.forEach(it=>o.push(row([it.n,...it.v,it.t])));
+  const b=new Blob(['﻿'+o.join('\r\n')],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='laundry-report-'+M.f+'_'+M.t+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),3000)}
+
 // ---- 3. สโตร์ ----
-V.store=()=>{const I=D.cfg||items();
+V.store=()=>{const ro=role=='hk',I=ro?items():(D.cfg||items());
   return `<div class="card"><h3>ผ้าทั้งหมด: สต็อก / par ตามชั้น / ที่ร้านซัก</h3><p>ที่ชั้นพร้อมใช้ = par − ค้างที่ร้านซัก · ทั้งหมด = สต็อก + par</p>
   <div class="ov"><table><tr><th>รายการ</th><th>สต็อก</th>${Z.map((z,i)=>`<th style="color:${COL[i]}">par ${z.replace('ชั้น ','')}</th>`).join('')}<th>par รวม</th><th>ที่ร้านซัก</th><th>พร้อมใช้</th><th>ทั้งหมด</th></tr>
   ${I.map((it,k)=>{const L=sum(S.sends.filter(s=>s.st!='closed').map(s=>Math.max(0,outst(s,it.id)))),ps=sum(it.par);
-   return `<tr><td><input value="${it.n}" size="14" oninput="ed(${k},'n',this.value)"></td>
-   <td><input type="number" value="${it.stock||0}" style="width:54px" oninput="ed(${k},'stock',+this.value)"></td>
-   ${it.par.map((v,z)=>`<td><input type="number" value="${v||0}" style="width:46px" oninput="ed(${k},'par',+this.value,${z})"></td>`).join('')}
+   return `<tr><td class="l">${ro?esc(it.n):`<input value="${esc(it.n)}" style="width:${Math.max(18,it.n.length+3)}ch" oninput="ed(${k},'n',this.value)">`}</td>
+   <td>${ro?(it.stock||0):`<input type="number" value="${it.stock||0}" style="width:54px" oninput="ed(${k},'stock',+this.value)">`}</td>
+   ${it.par.map((v,z)=>`<td>${ro?(v||0):`<input type="number" value="${v||0}" style="width:46px" oninput="ed(${k},'par',+this.value,${z})">`}</td>`).join('')}
    <td>${ps}</td><td>${L}</td><td>${ps-L}</td><td><b>${(it.stock||0)+ps}</b></td></tr>`}).join('')}</table></div>
-  <button class="p" onclick="saveCfg()">บันทึกสต็อก/par</button>
-  <button class="p" style="background:#334155" onclick="resetNames()">ใช้ชื่อรายการตามฟอร์ม PDF (คงสต็อก/par เดิม)</button></div>`};
+  ${ro?'<p><small>ดูได้อย่างเดียว — แก้ไขสต็อก/par ได้เฉพาะสโตร์และแอดมิน</small></p>':`<button class="p" onclick="saveCfg()">บันทึกสต็อก/par</button>
+  <button class="p" style="background:#334155" onclick="resetNames()">ใช้ชื่อรายการตามฟอร์ม PDF (คงสต็อก/par เดิม)</button>`}</div>`};
 function ed(k,f,v,z){D.cfg=D.cfg||JSON.parse(JSON.stringify(items()));if(z==null)D.cfg[k][f]=v;else D.cfg[k].par[z]=v}
 function resetNames(){const I=JSON.parse(JSON.stringify(items()));DEF.forEach((d,i)=>{if(I[i])I[i].n=d.n;else I.push(d)});D.cfg=null;up('cfg',{id:'cfg',items:I});render()}
 function saveCfg(){up('cfg',{id:'cfg',items:D.cfg||items()});D.cfg=null;render()}
 
 // ---- โครงหน้า ----
-const TABS={hk:['collect','acc','send','ret','pend'],store:['store'],admin:['collect','acc','send','ret','pend','admin','store']},
-  TN={collect:'เก็บผ้า',acc:'สะสมยอดผ้า',pend:'ค้างรับสะสม',send:'ส่งซัก',ret:'รับคืน',admin:'แอดมิน',store:'สต็อก'};
+const TABS={hk:['collect','acc','send','ret','pend','dmg','store'],store:['store'],admin:['collect','acc','send','ret','pend','dmg','admin','store']},
+  TN={collect:'เก็บผ้า',acc:'สะสมยอดผ้า',pend:'ค้างรับสะสม',send:'ส่งซัก',ret:'รับคืน',dmg:'แจ้งตำหนิ/หาย',admin:'แอดมิน',store:'สต็อก'};
 function render(){
   if(!role){$('app').innerHTML=`<div class="card" style="max-width:320px;margin:60px auto"><h3>🧺 ผ้าซักโรงแรม</h3>
     <input id="pin" type="password" inputmode="numeric" placeholder="PIN" style="width:100%"><button class="p" onclick="login()">เข้าสู่ระบบ</button>
