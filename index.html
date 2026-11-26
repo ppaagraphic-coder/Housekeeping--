@@ -276,28 +276,33 @@ V.admin=()=>{const m=D.m,inM=d=>(d||'').slice(0,7)==m,
   man=S.manual.filter(x=>inM(x.date)&&!x.del),mans=sum(man.map(x=>+x.amt||0)),comp=sum(S.cases.filter(c=>c.kind=='ชดใช้'&&inM(c.cdate)).map(c=>c.amt)),
   days=[...new Set(Lm.map(l=>l.date).concat(Sm.map(s=>s.date)))].sort(),O=S.cases.filter(c=>c.st=='open'&&c.q>0),cl=S.closes.find(x=>x.id=='m'+m),
   unsent=sum(S.logs.filter(l=>!l.sendId).map(l=>sum(Object.values(l.q))));
-  return `<div class="card"><h3>สรุปเดือน <input type="month" value="${m}" onchange="D.m=this.value;render()"> ${cl?'<span class="tag ok">ปิดยอดแล้ว</span>':''}</h3>
+  const CARDS=[`<div class="card"><h3>สรุปเดือน ${cl?'<span class="tag ok">ปิดยอดแล้ว</span>':''}</h3>
   <div class="k"><div>ยอดสะสมยังไม่ส่ง<b>${unsent}</b></div><div>เก็บผ้าเดือนนี้<b>${col}</b></div><div>ส่งซัก (${Sm.length} ครั้ง)<b>${snt}</b></div>
   <div>ค่าซัก (บาท)<b>${cost.toLocaleString()}</b></div><div>ค่าใช้จ่ายอื่นกรอกเอง<b>${mans.toLocaleString()}</b></div><div>ชดใช้ (บาท)<b>${comp.toLocaleString()}</b></div>
   <div style="grid-column:span 2">รวมรายจ่าย (ค่าซัก+อื่นๆ) <b>${(cost+mans).toLocaleString()} บาท</b></div></div>
   <p><small>เก็บผ้า = ยอดที่แม่บ้านบันทึกในแท็บ "เก็บผ้า" · ส่งซัก = ยอดในใบส่งซักของเดือนที่เลือก · ค่าซัก = ยอดที่แอดมินกรอกตามครั้งส่งซักด้านล่าง</small></p>
-  <button class="p" onclick="closeM(${col},${snt},${cost},${mans},${comp})">ปิดยอดเดือน ${m}</button></div>
-  <div class="card"><h3>ยอดผ้าที่เก็บรายชนิด ทั้งเดือน ${m} (แยกตามชั้น)</h3>${(()=>{const T=tot(Lm),I=items();I.forEach(it=>T[it.id]=T[it.id]||[0,0,0,0,0,0]);return gridT(I,T)})()}</div>
-  <div class="card"><h3>ค่าซักตามครั้ง — ${m}</h3><div class="ov"><table><tr><th>เลขที่ใบส่งซัก</th><th>วันที่</th><th>ร้านซัก</th><th>ชิ้น</th><th style="width:110px">ค่าซัก (บาท)</th></tr>
+  <button class="p" onclick="closeM(${col},${snt},${cost},${mans},${comp})">ปิดยอดเดือน ${m}</button></div>`,
+  `<div class="card"><h3>ยอดผ้าที่เก็บรายชนิด ทั้งเดือน ${m} (แยกตามชั้น)</h3>${(()=>{const T=tot(Lm),I=items();I.forEach(it=>T[it.id]=T[it.id]||[0,0,0,0,0,0]);return gridT(I,T)})()}</div>`,
+  `<div class="card"><h3>ค่าซักตามครั้ง — ${m}</h3><div class="ov"><table><tr><th>เลขที่ใบส่งซัก</th><th>วันที่</th><th>ร้านซัก</th><th>ชิ้น</th><th style="width:110px">ค่าซัก (บาท)</th></tr>
   ${Sm.map(s=>`<tr><td class="l">${s.no}</td><td>${s.date}</td><td class="l">${esc(s.co||'-')}</td><td>${sum(Object.values(s.lines))}</td><td><input type="number" inputmode="decimal" value="${+s.cost||''}" placeholder="0" style="width:100px;text-align:right" onchange="editCost('${s.id}',this.value)"></td></tr>`).join('')||'<tr><td colspan="5">ไม่มีใบส่งซักในเดือนนี้</td></tr>'}
-  <tr><td colspan="4" class="l"><b>รวมค่าซัก</b></td><td><b>${cost.toLocaleString()}</b></td></tr></table></div></div>
-  <div class="card"><h3>ค่าใช้จ่ายอื่น (กรอกเอง) — ${m}</h3><div class="ov"><table><tr><th>วันที่</th><th>รายการ</th><th style="width:110px">จำนวนเงิน (บาท)</th><th style="width:50px"></th></tr>
+  <tr><td colspan="4" class="l"><b>รวมค่าซัก</b></td><td><b>${cost.toLocaleString()}</b></td></tr></table></div></div>`,
+  `<div class="card"><h3>ค่าใช้จ่ายอื่น (กรอกเอง) — ${m}</h3><div class="ov"><table><tr><th>วันที่</th><th>รายการ</th><th style="width:110px">จำนวนเงิน (บาท)</th><th style="width:50px"></th></tr>
   ${man.map(x=>`<tr><td><input type="date" value="${x.date}" onchange="editMan('${x.id}','date',this.value)"></td><td><input value="${esc(x.label)}" style="width:100%" onchange="editMan('${x.id}','label',this.value)"></td><td><input type="number" inputmode="decimal" value="${+x.amt||0}" style="width:100px;text-align:right" onchange="editMan('${x.id}','amt',this.value)"></td><td><button class="s" onclick="delMan('${x.id}')">ลบ</button></td></tr>`).join('')}
   <tr style="background:#f6f8f9"><td><input id="mn_d" type="date" value="${inM(today())?today():m+'-01'}"></td><td><input id="mn_l" placeholder="รายการใหม่" style="width:100%"></td><td><input id="mn_a" type="number" inputmode="decimal" placeholder="0" style="width:100px;text-align:right"></td><td><button class="s" onclick="addMan()">+ เพิ่ม</button></td></tr>
-  <tr><td colspan="2" class="l"><b>รวม</b></td><td><b>${mans.toLocaleString()}</b></td><td></td></tr></table></div></div>
-  <div class="card"><h3>เคสตำหนิ/ไม่ได้รับที่ยังไม่ปิด (${O.length})</h3>${O.map(c=>{const s=S.sends.find(x=>x.id==c.sendId)||{};return `<div style="padding:6px 0;border-bottom:1px solid #eee">${s.no||''} · ${nm(c.item)} · <span class="tag">${c.t=='ขาด'?'ไม่ได้รับ':c.t} ${c.q}</span><br>
-   <button class="s" onclick="closeCase('${c.id}','ได้คืนแล้ว')">ปิด: ได้คืน</button> <button class="s" onclick="closeCase('${c.id}','ชดใช้')">ปิด: ชดใช้</button></div>`}).join('')||'ไม่มี'}</div>
-  <div class="card"><h3>รายวัน</h3><div class="ov"><table><tr><th>วันที่</th><th>เก็บ</th><th>ส่งซัก</th></tr>${days.map(d=>`<tr><td>${d}</td><td>${sum(Lm.filter(l=>l.date==d).map(l=>sum(Object.values(l.q))))}</td><td>${sum(Sm.filter(s=>s.date==d).map(s=>sum(Object.values(s.lines))))}</td></tr>`).join('')}</table></div></div>
-  <div class="card"><h3>ล้างข้อมูล / เริ่มต้นใหม่</h3>
+  <tr><td colspan="2" class="l"><b>รวม</b></td><td><b>${mans.toLocaleString()}</b></td><td></td></tr></table></div></div>`,
+  `<div class="card"><h3>เคสตำหนิ/ไม่ได้รับที่ยังไม่ปิด (${O.length})</h3>${O.map(c=>{const s=S.sends.find(x=>x.id==c.sendId)||{};return `<div style="padding:6px 0;border-bottom:1px solid #eee">${s.no||''} · ${nm(c.item)} · <span class="tag">${c.t=='ขาด'?'ไม่ได้รับ':c.t} ${c.q}</span><br>
+   <button class="s" onclick="closeCase('${c.id}','ได้คืนแล้ว')">ปิด: ได้คืน</button> <button class="s" onclick="closeCase('${c.id}','ชดใช้')">ปิด: ชดใช้</button></div>`}).join('')||'ไม่มี'}</div>`,
+  `<div class="card"><h3>รายวัน</h3><div class="ov"><table><tr><th>วันที่</th><th>เก็บ</th><th>ส่งซัก</th></tr>${days.map(d=>`<tr><td>${d}</td><td>${sum(Lm.filter(l=>l.date==d).map(l=>sum(Object.values(l.q))))}</td><td>${sum(Sm.filter(s=>s.date==d).map(s=>sum(Object.values(s.lines))))}</td></tr>`).join('')}</table></div></div>`,
+  `<div class="card"><h3>ล้างข้อมูล / เริ่มต้นใหม่</h3>
   <p><small>สำรองข้อมูลเป็นไฟล์ก่อนล้างได้ · การล้างจะลบข้อมูลใน Google Sheet และในเครื่องทุกเครื่องที่ซิงก์ ย้อนกลับไม่ได้</small></p>
   <button class="p" style="background:#334155" onclick="backup()">⬇ ดาวน์โหลดสำรองข้อมูล (JSON)</button>
   <button class="p" style="background:#b45309" onclick="resetData('data')">ล้างข้อมูลการใช้งาน (เก็บราคา/สต็อก/par)</button>
-  <button class="p" style="background:#b42318" onclick="resetData('all')">รีเซ็ตทั้งหมด กลับเป็นค่าเริ่มต้น</button></div>`};
+  <button class="p" style="background:#b42318" onclick="resetData('all')">รีเซ็ตทั้งหมด กลับเป็นค่าเริ่มต้น</button></div>`],
+  G={sum:[0,1,5],cost:[2,3],case:[4],reset:[6]},A=G[D.at]?D.at:'sum',
+  TB=[['sum','สรุปเดือน'],['cost','ค่าซัก / ค่าใช้จ่าย'],['case','เคสค้าง'+(O.length?' ('+O.length+')':'')],['reset','ล้างข้อมูล']];
+  return `<div class="card"><div class="chips" style="margin:0">${TB.map(([k,n])=>`<button class="chip" style="background:${k==A?'#14323f':'#e5e8eb'};color:${k==A?'#fff':'#1a1d21'}" onclick="D.at='${k}';render()">${n}</button>`).join('')}</div>
+  ${A=='sum'||A=='cost'?`<p style="margin:8px 0 0">เดือน <input type="month" value="${m}" onchange="D.m=this.value;render()"> ${cl?'<span class="tag ok">ปิดยอดแล้ว</span>':''}</p>`:''}</div>
+  ${G[A].map(i=>CARDS[i]).join('')}`};
 function backup(){const b=new Blob([JSON.stringify(S,null,1)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='laundry-backup-'+today()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),3000)}
 async function resetData(mode){const all=mode=='all';
   if(role!='admin')return alert('เฉพาะแอดมินเท่านั้น');
