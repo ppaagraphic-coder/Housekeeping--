@@ -265,8 +265,9 @@ function saveRet(sid){const s=S.sends.find(x=>x.id==sid),g={},d={},rn={};let bad
   up('rets',r);chk(s);const rows=Object.keys(g).filter(i=>g[i]||d[i]).map(i=>`${nm(i)}: รับ ${g[i]} ตำหนิ ${d[i]}${rn[i]?' ('+rn[i]+')':''}`);render();
   shareDoc('ret',null,r)}
 function chk(s){s.st=Object.keys(s.lines).some(i=>outst(s,i)>0)?'open':'closed';up('sends',s)}
-function closeCase(id,kind){const c=S.cases.find(x=>x.id==id);c.st='closed';c.kind=kind;c.cdate=today();
-  c.amt=kind=='ชดใช้'?(+prompt('จำนวนเงินชดใช้ (บาท)','0')||0):0;up('cases',c);chk(S.sends.find(x=>x.id==c.sendId));render()}
+function closeCase(id,kind){const c=S.cases.find(x=>x.id==id);let amt=0;
+  if(kind=='ชดใช้'){const v=prompt('จำนวนเงินชดใช้ (บาท)','');if(v===null)return;amt=+v;if(!(amt>0))return alert('กรุณากรอกจำนวนเงินชดใช้เป็นตัวเลขมากกว่า 0 — ยังไม่ปิดเคส')}
+  c.st='closed';c.kind=kind;c.cdate=today();c.amt=amt;up('cases',c);chk(S.sends.find(x=>x.id==c.sendId));render()}
 
 // ---- 2. แอดมิน ----
 V.admin=()=>{const m=D.m,inM=d=>(d||'').slice(0,7)==m,
@@ -281,6 +282,7 @@ V.admin=()=>{const m=D.m,inM=d=>(d||'').slice(0,7)==m,
   <div style="grid-column:span 2">รวมรายจ่าย (ค่าซัก+อื่นๆ) <b>${(cost+mans).toLocaleString()} บาท</b></div></div>
   <p><small>เก็บผ้า = ยอดที่แม่บ้านบันทึกในแท็บ "เก็บผ้า" · ส่งซัก = ยอดในใบส่งซักของเดือนที่เลือก · ค่าซัก = ยอดที่แอดมินกรอกตามครั้งส่งซักด้านล่าง</small></p>
   <button class="p" onclick="closeM(${col},${snt},${cost},${mans},${comp})">ปิดยอดเดือน ${m}</button></div>
+  <div class="card"><h3>ยอดผ้าที่เก็บรายชนิด ทั้งเดือน ${m} (แยกตามชั้น)</h3>${(()=>{const T=tot(Lm),I=items();I.forEach(it=>T[it.id]=T[it.id]||[0,0,0,0,0,0]);return gridT(I,T)})()}</div>
   <div class="card"><h3>ค่าซักตามครั้ง — ${m}</h3><div class="ov"><table><tr><th>เลขที่ใบส่งซัก</th><th>วันที่</th><th>ร้านซัก</th><th>ชิ้น</th><th style="width:110px">ค่าซัก (บาท)</th></tr>
   ${Sm.map(s=>`<tr><td class="l">${s.no}</td><td>${s.date}</td><td class="l">${esc(s.co||'-')}</td><td>${sum(Object.values(s.lines))}</td><td><input type="number" inputmode="decimal" value="${+s.cost||''}" placeholder="0" style="width:100px;text-align:right" onchange="editCost('${s.id}',this.value)"></td></tr>`).join('')||'<tr><td colspan="5">ไม่มีใบส่งซักในเดือนนี้</td></tr>'}
   <tr><td colspan="4" class="l"><b>รวมค่าซัก</b></td><td><b>${cost.toLocaleString()}</b></td></tr></table></div></div>
