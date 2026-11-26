@@ -15,6 +15,7 @@ const out = o => ContentService.createTextOutput(JSON.stringify(o)).setMimeType(
 function doGet(e) {
   const role = PINS[e.parameter.pin];
   if (!role) return out({ err: 'pin' });
+  if (e.parameter.check) return out({ role }); // ตรวจ PIN อย่างเดียว (เร็ว ไม่อ่านชีต) ใช้ตอนล็อกอิน
   const data = {};
   COLLS.forEach(c => {
     const s = sh(c), n = s.getLastRow();
@@ -27,6 +28,19 @@ function doGet(e) {
 function doPost(e) {
   const b = JSON.parse(e.postData.contents);
   if (!PINS[b.pin]) return out({ err: 'pin' });
+  if (b.reset) { // ล้างข้อมูล (เฉพาะแอดมิน): 'data' = ทุกอย่างยกเว้นราคา/สต็อก(cfg), 'all' = ทั้งหมด
+    if (PINS[b.pin] !== 'admin') return out({ err: 'role' });
+    const R = LockService.getScriptLock();
+    R.waitLock(20000);
+    try {
+      COLLS.forEach(c => {
+        if (b.reset !== 'all' && c === 'cfg') return;
+        const s = sh(c), n = s.getLastRow();
+        if (n > 1) s.deleteRows(2, n - 1);
+      });
+    } finally { R.releaseLock(); }
+    return out({ ok: 1, reset: b.reset });
+  }
   const L = LockService.getScriptLock();
   L.waitLock(20000);
   try {
