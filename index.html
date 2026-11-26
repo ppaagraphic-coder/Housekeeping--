@@ -44,9 +44,10 @@ const $=id=>document.getElementById(id), today=()=>new Date().toISOString().slic
   uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,5), sum=a=>a.reduce((x,y)=>x+y,0);
 let S=JSON.parse(localStorage.S||'null')||{cfg:[],logs:[],sends:[],rets:[],cases:[],manual:[],closes:[]},
   Q=JSON.parse(localStorage.Q||'[]'), role=localStorage.role||'', pin=localStorage.pin||'', tab='',
-  D={z:0,q:{},n:{},m:today().slice(0,7)}, busy=0;
+  D={z:0,...JSON.parse(localStorage.DQ||'{"q":{},"n":{}}'),m:today().slice(0,7)}, busy=0;
 const items=()=>(S.cfg[0]&&S.cfg[0].items)||DEF;
 const save=()=>{localStorage.S=JSON.stringify(S);localStorage.Q=JSON.stringify(Q)};
+const dq=()=>{localStorage.DQ=JSON.stringify({q:D.q,n:D.n})};
 const badge=()=>{const b=$('bd');if(b)b.textContent=Q.length?'⏳'+Q.length:'✓'};
 
 // บันทึกลงเครื่องทันที แล้วส่งขึ้น Sheet เบื้องหลัง (คิวส่งซ้ำเมื่อเน็ตหลุด)
@@ -131,22 +132,24 @@ function printDoc(kind,s,r){
 
 // ---- 1.1 แม่บ้าน: เก็บผ้า ----
 const V={};
+const zc=z=>sum(items().map(it=>+D.q[z+it.id]||0));
 V.collect=()=>{const z=D.z,I=items(),td=S.logs.filter(l=>l.date==(D.dt||today()));
-  return `<div class="card"><div class="chips">${Z.map((n,i)=>`<button class="chip" style="background:${i==z?COL[i]:'#e5e8eb'};color:${i==z?'#fff':'#1a1d21'}" onclick="D.z=${i};render()">${n}</button>`).join('')}</div>
+  return `<div class="card"><div class="chips">${Z.map((n,i)=>`<button class="chip" style="background:${i==z?COL[i]:'#e5e8eb'};color:${i==z?'#fff':'#1a1d21'}" onclick="D.z=${i};render()">${n}${zc(i)?' ('+zc(i)+')':''}</button>`).join('')}</div>
+  <p style="margin:4px 0">กรอกแล้วรวม <b>${sum(Z.map((_,i)=>zc(i)))}</b> ชิ้น ใน <b>${Z.filter((_,i)=>zc(i)).length}</b> โซน — กรอกให้ครบทุกชั้นแล้วบันทึกครั้งเดียวด้านล่าง</p>
   <p>วันที่ <input type="date" value="${D.dt||today()}" onchange="D.dt=this.value;render()"> ผู้เก็บ <input size="10" value="${D.by||''}" oninput="D.by=this.value"></p>
   ${I.map(it=>`<div class="row"><span style="border-left:6px solid ${COL[z]};padding-left:6px">${it.n}</span>
-   <input type="number" inputmode="numeric" min="0" value="${D.q[z+it.id]||''}" oninput="D.q['${z+it.id}']=+this.value">
-   <input placeholder="หมายเหตุ" value="${D.n[z+it.id]||''}" oninput="D.n['${z+it.id}']=this.value"></div>`).join('')}
+   <input type="number" inputmode="numeric" min="0" value="${D.q[z+it.id]||''}" oninput="D.q['${z+it.id}']=+this.value;dq()">
+   <input placeholder="หมายเหตุ" value="${D.n[z+it.id]||''}" oninput="D.n['${z+it.id}']=this.value;dq()"></div>`).join('')}
   <p>หัวหน้าแม่บ้านเซ็นรับทราบ</p>${pad('s1')}<button class="p" onclick="saveLog()">บันทึก + แชร์ไลน์</button>
   <button class="p" style="background:#334155" onclick="printDoc('day',{date:D.dt||today()})">🖨 พิมพ์เก็บผ้ารวมรายวัน (A4)</button></div>
   <div class="card"><h3>บันทึกวันนี้ (${td.length})</h3>${td.map(l=>`<div>${Z[l.z]}: ${sum(Object.values(l.q))} ชิ้น ${l.sendId?'<span class="tag ok">ส่งซักแล้ว</span>':''}</div>`).join('')||'-'}</div>`};
-function saveLog(){const z=D.z,q={},n={};
-  items().forEach(it=>{const v=D.q[z+it.id];if(v>0){q[it.id]=v;if(D.n[z+it.id])n[it.id]=D.n[z+it.id]}});
-  if(!Object.keys(q).length)return alert('ยังไม่ได้กรอกจำนวน');const sig=sg('s1');if(!sig)return alert('กรุณาเซ็นรับทราบ');
-  const l={id:uid(),date:D.dt||today(),z,q,n,sig,by:D.by||''};up('logs',l);
-  const rows=items().filter(it=>q[it.id]).map(it=>`${it.n}: ${q[it.id]}${n[it.id]?' ('+n[it.id]+')':''}`);
-  items().forEach(it=>{delete D.q[z+it.id];delete D.n[z+it.id]});render();
-  share(`เก็บผ้า ${Z[z]} ${l.date}`,rows,[['หัวหน้าแม่บ้าน '+(l.by),sig]])}
+function saveLog(){const I=items(),date=D.dt||today(),made=[];
+  Z.forEach((_,z)=>{const q={},n={};I.forEach(it=>{const v=D.q[z+it.id];if(v>0){q[it.id]=v;if(D.n[z+it.id])n[it.id]=D.n[z+it.id]}});if(Object.keys(q).length)made.push({z,q,n})});
+  if(!made.length)return alert('ยังไม่ได้กรอกจำนวน');const sig=sg('s1');if(!sig)return alert('กรุณาเซ็นรับทราบ');
+  const logs=made.map(m=>({id:uid(),date,z:m.z,q:m.q,n:m.n,sig,by:D.by||''}));logs.forEach(l=>up('logs',l));
+  const T=tot(logs),rows=I.filter(it=>T[it.id]).map(it=>lineTxt(it,T[it.id]));
+  D.q={};D.n={};dq();render();
+  share(`เก็บผ้ารวม ${date} (${logs.length} โซน)`,rows,[['หัวหน้าแม่บ้าน '+(D.by||''),sig]])}
 
 // ---- 1.2 ส่งซัก ----
 V.send=()=>{const U=S.logs.filter(l=>!l.sendId),ds=U.map(l=>l.date).sort(),f=D.from||ds[0]||today(),t=D.to||ds[ds.length-1]||today(),
