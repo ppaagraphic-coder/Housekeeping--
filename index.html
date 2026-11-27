@@ -4,39 +4,64 @@
 <title>ผ้าซักโรงแรม</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;font:15px/1.45 "Sarabun","Noto Sans Thai",system-ui,sans-serif;background:#f1f3f5;color:#1a1d21}
-header{background:#14323f;color:#fff;padding:9px 12px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:5}
-nav{display:flex;gap:4px;overflow-x:auto;background:#fff;padding:6px;position:sticky;top:46px;z-index:4;border-bottom:1px solid #dde1e5}
-nav button{padding:8px 14px;border:0;border-radius:8px;background:#eef1f3;font:inherit;white-space:nowrap}
+body{margin:0;font:16px/1.5 "Sarabun","Noto Sans Thai",system-ui,sans-serif;background:#f1f3f5;color:#1a1d21}
+header{background:#14323f;color:#fff;padding:9px 12px;display:flex;justify-content:space-between;align-items:center}
+nav{display:flex;gap:4px;overflow-x:auto;background:#fff;padding:6px;border-bottom:1px solid #dde1e5}
+nav button{padding:11px 14px;border:0;border-radius:8px;background:#eef1f3;font:inherit;white-space:nowrap}
 nav button.on{background:#14323f;color:#fff}
 .card{background:#fff;margin:10px;padding:12px;border-radius:10px}
 h3{margin:0 0 8px}
 button{font:inherit;cursor:pointer}
-.p{background:#0e7c66;color:#fff;border:0;border-radius:8px;padding:11px 16px;width:100%;margin-top:10px;font-weight:600}
-.s{background:#fff;color:inherit;border:1px solid #cfd5da;border-radius:6px;padding:3px 9px}
+.p{background:#0e7c66;color:#fff;border:0;border-radius:8px;padding:14px 16px;min-height:48px;width:100%;margin-top:10px;font-weight:600}
+.s{background:#fff;color:inherit;border:1px solid #cfd5da;border-radius:8px;padding:9px 12px;min-height:40px}
 .chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
 .chip{border:0;border-radius:18px;padding:7px 14px;font-weight:600}
-input,select{font:inherit;padding:6px;border:1px solid #cfd5da;border-radius:6px;max-width:100%}
+input,select{font:inherit;font-size:16px;padding:9px 8px;border:1px solid #cfd5da;border-radius:6px;max-width:100%}
 .row{display:grid;grid-template-columns:1fr 64px 1fr;gap:6px;align-items:center;padding:3px 0;border-bottom:1px solid #f0f2f4}
 .row input{width:100%}
 .ov{overflow-x:auto}
-table{border-collapse:collapse;width:100%;font-size:12.5px}
-td,th{border:1px solid #dde1e5;padding:4px 5px;text-align:center}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+td,th{border:1px solid #dde1e5;padding:6px;text-align:center}
 td.l{text-align:left}
 th{background:#f1f3f5}
 .sg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
-.sig{border:1px dashed #8a949c;background:#fff;touch-action:none;width:100%;height:90px;display:block}
+.sig{border:1px dashed #8a949c;background:#fff;touch-action:none;width:100%;height:140px;display:block}
 .k{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .k div{background:#f1f3f5;border-radius:8px;padding:8px}
 .k b{display:block;font-size:20px}
 .tag{padding:1px 8px;border-radius:10px;background:#fde8e8;color:#b42318;font-size:12px}
 .ok{background:#dcf5e8;color:#0e7c66}
+#top{position:sticky;top:0;z-index:5}
+.nb{font-style:normal;background:#dc2626;color:#fff;border-radius:9px;padding:0 6px;font-size:12px;margin-left:4px}
+nav button.on .nb{background:#fff;color:#14323f}
+.it{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #f0f2f4}
+.it .n{flex:1;min-width:0;padding-left:8px;line-height:1.3}
+.stp{display:flex;align-items:center;gap:4px}
+.stp button{width:44px;height:44px;border:1px solid #cfd5da;background:#fff;border-radius:10px;font-size:22px;line-height:1;padding:0}
+.stp input{width:56px;text-align:center;height:44px;padding:0;font-weight:700;font-size:18px}
+.nt{width:100%;margin:0 0 6px}
+.bar{position:sticky;bottom:0;background:#14323f;color:#fff;margin:10px -12px 0;padding:10px 12px;display:flex;gap:10px;align-items:center;justify-content:space-between;z-index:3}
+.bar button{background:#0e7c66;color:#fff;border:0;border-radius:8px;padding:11px 14px;font-weight:600;white-space:nowrap}
+.ic{border:1px solid #dde1e5;border-radius:10px;padding:10px;margin:8px 0}
+.ih{display:flex;justify-content:space-between;gap:8px;margin-bottom:6px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;text-align:center}
+.g3 small{display:block;color:#5b6670}
+.g3 input{width:100%;text-align:center;height:48px;font-weight:700;font-size:18px}
+.rem{margin-top:6px;font-size:14px;font-weight:600}.rem.bad{color:#b42318}.rem.warn{color:#b45309}.rem.okk{color:#0e7c66}
+.em{color:#6b7580}
+#toast{position:fixed;left:12px;right:12px;bottom:16px;z-index:30;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+#toast div{background:#1a1d21;color:#fff;padding:12px 14px;border-radius:10px;white-space:pre-line;box-shadow:0 4px 14px #0004}
+#toast div.ok{background:#0e7c66}
+.md{position:fixed;inset:0;background:#0007;z-index:40;display:flex;align-items:center;justify-content:center;padding:16px}
+.mb{background:#fff;border-radius:12px;padding:16px;width:100%;max-width:340px}.mb p{margin:0 0 10px;white-space:pre-line}.mb input{width:100%}
+.mr{display:flex;gap:8px;margin-top:12px}.mr button{flex:1;margin:0}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #2563eb;outline-offset:1px}
 </style></head><body>
 <div id="app"></div>
 <script>
 const API = 'https://script.google.com/macros/s/AKfycbzgoS8OBYkeSXYa4bEPqYvJUG9yr79QnMZ9fvw-xCQDU7XBxUxOrXB0xg_moOtfJ6BomA/exec'; // ← วาง URL Web App จาก Apps Script (ว่าง = โหมดทดลอง เก็บในเครื่อง PIN: 1111 แม่บ้าน / 2222 สโตร์ / 9999 แอดมิน)
 const Z = ['ชั้น 1','ชั้น 2','ชั้น 3','ชั้น 4','ชั้น 5','วิลล่า']; // 8+8+8+8+8 ห้อง + วิลล่า 1 ห้อง = 41 ห้อง
-const COL = ['#c2410c','#a16207','#15803d','#0e7490','#1d4ed8','#7e22ce'];
+const COL = ['#c2410c','#854d0e','#15803d','#0e7490','#1d4ed8','#7e22ce'];
 const DEF = ["ผ้าปูที่นอนแบบติดซิป (ด้าน A) ขนาด 183 ซม.", "ผ้าปูที่นอนแบบติดซิป (ด้าน B) ขนาด 107 ซม.", "ผ้ารองกันเปื้อนกันน้ำ ขนาด 183 ซม", "ผ้ารองกันเปื้อนกันน้ำ ขนาด 107 ซม.", "ผ้าปูที่นอนแบบรัดมุม ขนาด 183 ซม.", "ผ้าปูที่นอนแบบรัดมุม ขนาด 107 ซม.", "ปลอกผ้านวม ขนาด 80 นิ้ว", "ปลอกผ้านวม ขนาด 105 นิ้ว", "ไส้ผ้านวมไมโครไฟเบอร์ 3D ขนาด 80 นิ้ว", "ไส้ผ้านวมไมโครไฟเบอร์ 3D ขนาด 105 นิ้ว", "หมอนไมโครไฟเบอร์ ขนาด 19", "หมอนไมโครไฟเบอร์ ขนาด 19 แบบแข็ง", "ปลอกหมอนกันเปื้อนติดซิป ขนาด 19 นิ้ว", "ปลอกหมอน ขนาด 20 นิ้ว", "ผ้าขนหนูเช็ดตัว ขนาด 30", "ผ้าขนหนูเช็ดมือ ขนาด 15", "ผ้าขนหนูเช็ดหน้า ขนาด 12", "ผ้าขนหนูเช็ดเท้า ขนาด 18", "เสื้อคลุมอาบน้ำผ้าฝ้าย ขนาด 56"]
   .map((n,i)=>({id:'i'+i,n,p:0,stock:0,par:[0,0,0,0,0,0]})); // รายการตามแบบฟอร์มเดิม แก้ราคา/par ได้ในหน้า "สต็อก"
 
@@ -48,7 +73,7 @@ let S=JSON.parse(localStorage.S||'null')||{cfg:[],logs:[],sends:[],rets:[],cases
 const items=()=>(S.cfg[0]&&S.cfg[0].items)||DEF;
 const save=()=>{localStorage.S=JSON.stringify(S);localStorage.Q=JSON.stringify(Q)};
 const dq=()=>{localStorage.DQ=JSON.stringify({q:D.q,n:D.n})};
-const badge=()=>{const b=$('bd');if(b)b.textContent=Q.length?'⏳'+Q.length:'✓'};
+const badge=()=>{const b=$('bd');if(b){const on=navigator.onLine;b.textContent=(on?'● ':'○ ')+(Q.length?'รอส่ง '+Q.length:on?'ซิงก์แล้ว':'ออฟไลน์');b.style.color=!on||Q.length?'#fbbf24':'#86efac'}};
 
 // บันทึกลงเครื่องทันที แล้วส่งขึ้น Sheet เบื้องหลัง (คิวส่งซ้ำเมื่อเน็ตหลุด)
 function up(c,r){const a=S[c],i=a.findIndex(x=>x.id==r.id);i<0?a.push(r):a[i]=r;Q.push({c,r});save();flush()}
@@ -62,9 +87,11 @@ async function flush(){
 const pins=()=>{try{return JSON.parse(localStorage.pins||'{}')}catch(e){return{}}};
 async function sync(){
   if(!API)return;const bd=$('bd');if(bd)bd.textContent='⟳ โหลด…';
-  try{const r=await(await fetch(API+'?pin='+pin)).json();
+  try{const r=await(await fetch(API,{method:'POST',body:JSON.stringify({pin,load:1,since:+localStorage.since||0})})).json();
     if(r.err){const k=pins();delete k[pin];localStorage.pins=JSON.stringify(k);return logout()}
-    S=r.data;Q.forEach(o=>{const a=S[o.c],i=a.findIndex(x=>x.id==o.r.id);i<0?a.push(o.r):a[i]=o.r});save();render()}catch(e){badge()}}
+    if(r.full)S=r.data;else for(const c in r.data)r.data[c].forEach(x=>{const a=S[c]=S[c]||[],i=a.findIndex(y=>y.id==x.id);i<0?a.push(x):a[i]=x});
+    if(r.ts)localStorage.since=r.ts;
+    Q.forEach(o=>{const a=S[o.c],i=a.findIndex(x=>x.id==o.r.id);i<0?a.push(o.r):a[i]=o.r});save();softRender()}catch(e){badge()}}
 // เข้าระบบเร็ว: PIN ที่เคยเข้าสำเร็จในเครื่องนี้ → เข้าทันทีด้วยข้อมูลที่แคชไว้ แล้วโหลดข้อมูลล่าสุดเบื้องหลัง
 // PIN ใหม่ → ตรวจ PIN อย่างเดียว (check=1 ไม่ต้องโหลดข้อมูลทั้งหมด) แล้วค่อยโหลดข้อมูลเบื้องหลัง
 async function login(){
@@ -74,25 +101,41 @@ async function login(){
   if(!API){const R={1111:'hk',2222:'store',9999:'admin'};if(!R[p])return alert('PIN ไม่ถูกต้อง');return done(R[p])}
   if(k[p])return done(k[p],1);
   if(btn){btn.disabled=true;btn.textContent='กำลังตรวจสอบ…'}
-  try{const r=await(await fetch(API+'?pin='+encodeURIComponent(p)+'&check=1')).json();
+  try{const r=await(await fetch(API,{method:'POST',body:JSON.stringify({pin:p,check:1})})).json();
     if(r.err){reset();return alert('PIN ไม่ถูกต้อง')}
     if(r.data){S=r.data;done(r.role)}else done(r.role,1)}
   catch(e){reset();alert('เชื่อมต่อไม่ได้')}}
-function logout(){role=pin='';localStorage.role=localStorage.pin='';render()}
+function logout(){clrFS();localStorage.removeItem('since');role=pin='';localStorage.role=localStorage.pin='';render()}
 
+// ---- UI helpers: toast / modal / เก็บค่าฟอร์มข้าม render / ตัวนับสด ----
+function toast(m,ok){let h=$('toast');if(!h){h=document.createElement('div');h.id='toast';document.body.appendChild(h)}const d=document.createElement('div');d.textContent=m;if(ok)d.className='ok';h.appendChild(d);setTimeout(()=>d.remove(),ok?2500:4500)}
+window.alert=m=>toast(String(m));
+function ask(msg,o={}){return new Promise(res=>{const d=document.createElement('div');d.className='md';d.innerHTML=`<div class="mb" role="dialog"><p>${esc(msg)}</p>${o.input?`<input id="mi" type="number" inputmode="decimal" aria-label="${esc(msg)}">`:''}<div class="mr"><button class="s" id="mn">ยกเลิก</button><button class="p" id="my">ตกลง</button></div></div>`;document.body.appendChild(d);const f=v=>{d.remove();res(v)};$('mn').onclick=()=>f(null);$('my').onclick=()=>f(o.input?$('mi').value:true);if(o.input)$('mi').focus()})}
+let FS={},skip=0;const clrFS=()=>{FS={};skip=1};
+function snap(){if(skip){skip=0;return}
+  document.querySelectorAll('#app input[id],#app select[id]').forEach(e=>{if(e.id!='pin'&&!/^(q|nt)\d/.test(e.id))FS[e.id]=e.value});
+  document.querySelectorAll('canvas.sig').forEach(c=>{FS['cv'+c.id]=c.dirty?c.toDataURL():''})}
+function restore(){for(const k in FS){if(k.startsWith('cv')){const c=$(k.slice(2));if(c&&FS[k]){const im=new Image;im.onload=()=>{c.getContext('2d').drawImage(im,0,0);c.dirty=1};im.src=FS[k]}}else{const e=$(k);if(e&&e.value!==FS[k])e.value=FS[k]}}}
+function softRender(){const a=document.activeElement;if(a&&/^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName)&&a.id!='pin'){a.addEventListener('blur',()=>setTimeout(render,150),{once:true});badge();return}render()}
+const bdg=k=>{const n=k=='send'?sum(S.logs.filter(l=>!l.sendId).map(l=>sum(Object.values(l.q)))):k=='ret'?S.sends.filter(s=>s.st!='closed').length:k=='admin'?S.cases.filter(c=>c.st=='open'&&c.q>0).length:0;return n?` <i class="nb">${n}</i>`:''};
+function cUp(){Z.forEach((_,i)=>{const e=$('ch'+i);if(e)e.textContent=Z[i]+(zc(i)?' ('+zc(i)+')':'')});const a=$('tz'),b=$('tt');if(a)a.textContent=zc(D.z);if(b)b.textContent=sum(Z.map((_,i)=>zc(i)))}
+function cb(k,d){const v=Math.max(0,(+D.q[k]||0)+d);D.q[k]=v;dq();const e=$('q'+k);if(e)e.value=v||'';cUp()}
+function tn(k){const e=$('nt'+k);if(!e)return;e.style.display=e.style.display=='none'?'block':'none';if(e.style.display=='block')e.focus()}
+function rcalc(i){const c=$('ic'+i);if(!c)return;const v=k=>+$(k+i).value||0,m=+c.dataset.o-v('g')-v('d')-v('l'),e=$('rc'+i);e.textContent=m<0?'⚠ เกินยอดค้าง '+(-m)+' ชิ้น':m>0?'ยังไม่ได้รับ '+m+' ชิ้น → ระบบเปิดเคส "ไม่ได้รับ"':'ครบ ✓';e.className='rem '+(m<0?'bad':m>0?'warn':'okk')}
+function rall(){document.querySelectorAll('.ic').forEach(c=>{const i=c.id.slice(2);$('g'+i).value=c.dataset.o;$('d'+i).value=0;$('l'+i).value=0;rcalc(i)})}
 // ---- ลายเซ็น + แชร์ไฟล์หลักฐาน A4 (LINE) ----
-const pad=id=>`<canvas id="${id}" class="sig" width="300" height="90"></canvas><button class="s" onclick="clr('${id}')">ล้าง</button>
-<div style="margin-top:6px"><input id="${id}_n" placeholder="ชื่อผู้เซ็น" style="width:100%;margin-bottom:4px"><input id="${id}_d" type="date" value="${today()}" style="width:100%"></div>`;
+const pad=id=>`<canvas id="${id}" class="sig" width="300" height="140"></canvas><button class="s" onclick="clr('${id}')">ล้าง</button>
+<div style="margin-top:6px"><input id="${id}_n" placeholder="ชื่อผู้เซ็น" aria-label="ชื่อผู้เซ็น" value="${esc(localStorage['nm_'+id]||'')}" style="width:100%;margin-bottom:4px"><input id="${id}_d" type="date" value="${today()}" style="width:100%"></div>`;
 function initPads(){document.querySelectorAll('canvas.sig').forEach(c=>{const x=c.getContext('2d');x.lineWidth=2;x.lineCap='round';let d=0;
-  const p=e=>{const r=c.getBoundingClientRect();return[(e.clientX-r.left)*300/r.width,(e.clientY-r.top)*90/r.height]};
+  const p=e=>{const r=c.getBoundingClientRect();return[(e.clientX-r.left)*300/r.width,(e.clientY-r.top)*140/r.height]};
   c.onpointerdown=e=>{d=1;c.setPointerCapture(e.pointerId);x.beginPath();x.moveTo(...p(e));c.dirty=1};
   c.onpointermove=e=>{if(d){x.lineTo(...p(e));x.stroke()}};c.onpointerup=()=>d=0})}
-const clr=id=>{const c=$(id);c.getContext('2d').clearRect(0,0,300,90);c.dirty=0};
+const clr=id=>{const c=$(id);c.getContext('2d').clearRect(0,0,300,140);c.dirty=0};
 const sg=id=>{const c=$(id);return c&&c.dirty?c.toDataURL('image/png'):''};
 // ลายเซ็น + ชื่อผู้เซ็น + วันที่ (ต้องครบทั้งสามอย่าง)
 function signOf(id,who){const sig=sg(id);if(!sig){alert('กรุณาเซ็นชื่อ'+(who?' — '+who:''));return null}
   const n=(($(id+'_n')||{}).value||'').trim();if(!n){alert('กรุณากรอกชื่อผู้เซ็น'+(who?' — '+who:''));return null}
-  return {sig,n,d:(($(id+'_d')||{}).value)||today()}}
+  try{localStorage['nm_'+id]=n}catch(e){}return {sig,n,d:(($(id+'_d')||{}).value)||today()}}
 // ---- คำนวณ ----
 const tot=L=>{const T={};L.forEach(l=>Object.keys(l.q).forEach(i=>{(T[i]=T[i]||[0,0,0,0,0,0])[l.z]+=l.q[i]}));return T};
 const outst=(s,i)=>(s.lines[i]||0)-sum(S.rets.filter(r=>r.sendId==s.id).map(r=>r.g[i]||0))
@@ -205,21 +248,21 @@ async function shareDoc(kind,s,r){
 const V={};
 const zc=z=>sum(items().map(it=>+D.q[z+it.id]||0));
 V.collect=()=>{const z=D.z,I=items(),td=S.logs.filter(l=>l.date==(D.dt||today()));
-  return `<div class="card"><div class="chips">${Z.map((n,i)=>`<button class="chip" style="background:${i==z?COL[i]:'#e5e8eb'};color:${i==z?'#fff':'#1a1d21'}" onclick="D.z=${i};render()">${n}${zc(i)?' ('+zc(i)+')':''}</button>`).join('')}</div>
-  <p style="margin:4px 0">กรอกแล้วรวม <b>${sum(Z.map((_,i)=>zc(i)))}</b> ชิ้น ใน <b>${Z.filter((_,i)=>zc(i)).length}</b> โซน — กรอกให้ครบทุกชั้นแล้วบันทึกครั้งเดียวด้านล่าง</p>
-  <p>วันที่ <input type="date" value="${D.dt||today()}" onchange="D.dt=this.value;render()"> ผู้เก็บ <input size="10" value="${D.by||''}" oninput="D.by=this.value"></p>
-  ${I.map(it=>`<div class="row"><span style="border-left:6px solid ${COL[z]};padding-left:6px">${it.n}</span>
-   <input type="number" inputmode="numeric" min="0" value="${D.q[z+it.id]||''}" oninput="D.q['${z+it.id}']=+this.value;dq()">
-   <input placeholder="หมายเหตุ" value="${D.n[z+it.id]||''}" oninput="D.n['${z+it.id}']=this.value;dq()"></div>`).join('')}
-  <p>หัวหน้าแม่บ้านเซ็นรับทราบ</p>${pad('s1')}<button class="p" onclick="saveLog()">บันทึก + แชร์ไฟล์ A4 (PDF)</button>
+  return `<div class="card"><div class="chips">${Z.map((n,i)=>`<button class="chip" id="ch${i}" style="background:${i==z?COL[i]:'#e5e8eb'};color:${i==z?'#fff':'#1a1d21'}" onclick="D.z=${i};render()">${n}${zc(i)?' ('+zc(i)+')':''}</button>`).join('')}</div>
+  <p style="margin:4px 0">กรอกให้ครบทุกชั้น แล้วบันทึกครั้งเดียวด้านล่าง</p>
+  <p><label>วันที่ <input type="date" value="${D.dt||today()}" onchange="D.dt=this.value;render()"></label> <label>ผู้เก็บ <input size="10" value="${D.by||''}" oninput="D.by=this.value"></label></p>
+  ${I.map(it=>{const k=z+it.id,nt=D.n[k]||'';return `<div class="it"><div class="n" style="border-left:6px solid ${COL[z]}">${it.n}</div><div class="stp"><button type="button" aria-label="ลด ${esc(it.n)}" onclick="cb('${k}',-1)">−</button><input id="q${k}" aria-label="${esc(it.n)}" type="number" inputmode="numeric" min="0" value="${D.q[k]||''}" placeholder="0" oninput="D.q['${k}']=+this.value;dq();cUp()"><button type="button" aria-label="เพิ่ม ${esc(it.n)}" onclick="cb('${k}',1)">+</button></div><button type="button" class="s" aria-label="หมายเหตุ" onclick="tn('${k}')">${nt?'📝✓':'📝'}</button></div>
+  <input class="nt" id="nt${k}" placeholder="หมายเหตุ" aria-label="หมายเหตุ" value="${esc(nt)}" style="display:${nt?'block':'none'}" oninput="D.n['${k}']=this.value;dq()">`}).join('')}
+  <div class="bar"><span>${Z[z]}: <b id="tz">0</b> · รวม <b id="tt">0</b> ชิ้น</span>${z<5?`<button type="button" onclick="D.z=${z+1};render();scrollTo(0,0)">ชั้นถัดไป →</button>`:`<button type="button" onclick="$('sgw').scrollIntoView({behavior:'smooth'})">ไปเซ็น/บันทึก ↓</button>`}</div>
+  <p id="sgw">หัวหน้าแม่บ้านเซ็นรับทราบ</p>${pad('s1')}<button class="p" onclick="saveLog()">บันทึก + แชร์ไฟล์ A4 (PDF)</button>
   <button class="p" style="background:#334155" onclick="openPdf('day',{date:D.dt||today()})">📄 เปิด PDF เก็บผ้ารวมรายวัน (A4)</button></div>
-  <div class="card"><h3>บันทึกวันนี้ (${td.length})</h3>${td.map(l=>`<div>${Z[l.z]}: ${sum(Object.values(l.q))} ชิ้น ${l.sendId?'<span class="tag ok">ส่งซักแล้ว</span>':''}</div>`).join('')||'-'}</div>`};
+  <div class="card"><h3>บันทึกวันนี้ (${td.length})</h3>${td.map(l=>`<div>${Z[l.z]}: ${sum(Object.values(l.q))} ชิ้น ${l.sendId?'<span class="tag ok">ส่งซักแล้ว</span>':''}</div>`).join('')||'<span class="em">ยังไม่มีการบันทึกวันนี้ — กรอกจำนวนแล้วกดบันทึกด้านบน</span>'}</div>`};
 function saveLog(){const I=items(),date=D.dt||today(),made=[];
   Z.forEach((_,z)=>{const q={},n={};I.forEach(it=>{const v=D.q[z+it.id];if(v>0){q[it.id]=v;if(D.n[z+it.id])n[it.id]=D.n[z+it.id]}});if(Object.keys(q).length)made.push({z,q,n})});
   if(!made.length)return alert('ยังไม่ได้กรอกจำนวน');const SG=signOf('s1','หัวหน้าแม่บ้าน');if(!SG)return;
-  const logs=made.map(m=>({id:uid(),date,z:m.z,q:m.q,n:m.n,sig:SG.sig,sn:SG.n,sd:SG.d,by:D.by||''}));logs.forEach(l=>up('logs',l));
+  clrFS();const logs=made.map(m=>({id:uid(),date,z:m.z,q:m.q,n:m.n,sig:SG.sig,sn:SG.n,sd:SG.d,by:D.by||''}));logs.forEach(l=>up('logs',l));
   const T=tot(logs),rows=I.filter(it=>T[it.id]).map(it=>lineTxt(it,T[it.id]));
-  D.q={};D.n={};dq();render();
+  D.q={};D.n={};dq();render();toast('✓ บันทึกการเก็บผ้าแล้ว',1);
   shareDoc('day',{date})}
 
 // ---- 1.1b สะสมยอดผ้า (ยังไม่ส่งซัก) แยกตามชั้น/โซน ----
@@ -229,19 +272,19 @@ V.acc=()=>{const U=S.logs.filter(l=>!l.sendId),T=tot(U),I=items(),ds=U.map(l=>l.
   ${(I.forEach(it=>T[it.id]=T[it.id]||[0,0,0,0,0,0]),gridT(I,T))}</div>`};
 
 // ---- 1.2 ส่งซัก ----
-V.send=()=>{const U=S.logs.filter(l=>!l.sendId),ds=U.map(l=>l.date).sort(),f=D.from||ds[0]||today(),t=D.to||ds[ds.length-1]||today(),
+V.send0=()=>{const U=S.logs.filter(l=>!l.sendId),ds=U.map(l=>l.date).sort(),f=D.from||ds[0]||today(),t=D.to||ds[ds.length-1]||today(),
   L=U.filter(l=>l.date>=f&&l.date<=t),T=tot(L),I=items().filter(it=>T[it.id]);
   return `<div class="card"><h3>ใบส่งซัก — ยอดสะสมยังไม่ส่ง ${U.length} รายการ</h3>
   <p>ตั้งแต่ <input type="date" value="${f}" onchange="D.from=this.value;render()"> ถึง <input type="date" value="${t}" onchange="D.to=this.value;render()"></p>
   <p>ร้านซัก <input value="${D.co||''}" oninput="D.co=this.value"></p>${I.length?totT(I,T)+`<p>รวม ${sum(L.map(l=>sum(Object.values(l.q))))} ชิ้น (ตรวจยอดกับร้านก่อนเซ็น)</p>`:'<p>ไม่มียอดสะสมในช่วงนี้</p>'}
   <div class="sg"><div>ผู้ส่ง (แม่บ้าน)${pad('sa')}</div><div>ร้านซัก${pad('sb')}</div></div>
   <button class="p" onclick="mkSend('${f}','${t}')">บันทึกใบส่งซัก + แชร์ไฟล์ A4 (PDF)</button></div>
-  <div class="card"><h3>ใบส่งซักล่าสุด</h3>${S.sends.slice(-8).reverse().map(s=>`<div>${s.no} · ${s.co} · ${sum(Object.values(s.lines))} ชิ้น <span class="tag ${s.st=='closed'?'ok':''}">${s.st=='closed'?'ปิดงาน':'ค้างรับ'}</span> <button class="s" onclick="openPdf('send',S.sends.find(x=>x.id=='${s.id}'))">📄 เปิด PDF A4</button></div>`).join('')||'-'}</div>`};
+  <div class="card"><h3>ใบส่งซักล่าสุด</h3>${S.sends.slice(-8).reverse().map(s=>`<div>${s.no} · ${s.co} · ${sum(Object.values(s.lines))} ชิ้น <span class="tag ${s.st=='closed'?'ok':''}">${s.st=='closed'?'ปิดงาน':'ค้างรับ'}</span> <button class="s" onclick="openPdf('send',S.sends.find(x=>x.id=='${s.id}'))">📄 เปิด PDF A4</button></div>`).join('')||'<span class="em">ยังไม่มีใบส่งซัก — เก็บผ้าก่อน แล้วสร้างใบส่งซักจากยอดสะสมด้านบน</span>'}</div>`};
 function mkSend(f,t){const L=S.logs.filter(l=>!l.sendId&&l.date>=f&&l.date<=t);if(!L.length)return alert('ไม่มียอดสะสม');
   const SA=signOf('sa','ผู้ส่ง (แม่บ้าน)'),SB=signOf('sb','ร้านซัก');if(!SA||!SB)return;
-  const T=tot(L),id=uid(),s={id,no:'SW'+today().replace(/-/g,'')+'-'+(S.sends.length+1),date:today(),from:f,to:t,co:D.co||'',zq:T,lines:{},sa:SA.sig,san:SA.n,sad:SA.d,sb:SB.sig,sbn:SB.n,sbd:SB.d,st:'open'};
+  clrFS();const T=tot(L),id=uid(),s={id,no:'SW'+today().replace(/-/g,'')+'-'+(S.sends.length+1),date:today(),from:f,to:t,co:D.co||'',zq:T,lines:{},sa:SA.sig,san:SA.n,sad:SA.d,sb:SB.sig,sbn:SB.n,sbd:SB.d,st:'open'};
   Object.keys(T).forEach(i=>s.lines[i]=sum(T[i]));L.forEach(l=>{l.sendId=id;up('logs',l)});up('sends',s);
-  const rows=items().filter(it=>T[it.id]).map(it=>lineTxt(it,T[it.id]));render();
+  const rows=items().filter(it=>T[it.id]).map(it=>lineTxt(it,T[it.id]));render();toast('✓ บันทึกใบส่งซักแล้ว',1);
   shareDoc('send',s)}
 
 // ---- 1.3b ยอดค้างรับสะสม (ส่งซักแล้วแต่ยังรับไม่ครบ) ----
@@ -255,28 +298,27 @@ V.pend=()=>{const O=S.sends.filter(s=>s.st!='closed'),I=items(),
   <div class="card"><h3>แยกตามใบส่งซัก</h3>${O.map(s=>`<div style="padding:4px 0">${s.no} · ${s.co||'-'} · ส่ง ${s.date} · ค้างรับ <b>${sum(I.map(it=>Math.max(0,outst(s,it.id))))}</b> / ${sum(Object.values(s.lines))} ชิ้น</div>`).join('')||'-'}</div>`};
 
 // ---- 1.3 รับผ้า ----
-V.ret=()=>{const O=S.sends.filter(s=>s.st!='closed');const s=S.sends.find(x=>x.id==D.rs&&x.st!='closed')||O[0];
+V.ret0=()=>{const O=S.sends.filter(s=>s.st!='closed');const s=S.sends.find(x=>x.id==D.rs&&x.st!='closed')||O[0];
   if(!s)return '<div class="card">ไม่มีใบส่งซักที่ค้างรับ</div>';
   const ks=Object.keys(s.lines).filter(i=>outst(s,i)>0);
-  return `<div class="card"><h3>รับผ้าคืน</h3><select onchange="D.rs=this.value;render()">${O.map(x=>`<option value="${x.id}" ${x.id==s.id?'selected':''}>${x.no} · ${x.co}</option>`).join('')}</select>
-  <div class="ov"><table><tr><th>รายการ</th><th>ค้างรับ</th><th>รับ(ดี)</th><th>ตำหนิ</th><th>หาย</th><th>หมายเหตุ</th></tr>${ks.map(i=>`<tr><td class="l">${nm(i)}</td><td><b>${outst(s,i)}</b></td>
-   <td><input id="g${i}" type="number" inputmode="numeric" min="0" style="width:56px"></td><td><input id="d${i}" type="number" inputmode="numeric" min="0" style="width:56px"></td><td><input id="l${i}" type="number" inputmode="numeric" min="0" style="width:56px"></td><td><input id="r${i}" size="10"></td></tr>`).join('')}</table></div>
+  return `<div class="card"><h3>รับผ้าคืน</h3><select onchange="clrFS();D.rs=this.value;render()">${O.map(x=>`<option value="${x.id}" ${x.id==s.id?'selected':''}>${x.no} · ${x.co}</option>`).join('')}</select>
+  <button type="button" class="s" onclick="rall()">✓ รับครบทุกรายการ</button>${ks.map(i=>{const o=outst(s,i);return `<div class="ic" id="ic${i}" data-o="${o}"><div class="ih"><b>${nm(i)}</b><span class="tag">ค้าง ${o}</span></div><div class="g3"><label><small>รับ (ดี)</small><input id="g${i}" type="number" inputmode="numeric" min="0" value="${o}" oninput="rcalc('${i}')"></label><label><small>ตำหนิ</small><input id="d${i}" type="number" inputmode="numeric" min="0" value="0" oninput="rcalc('${i}')"></label><label><small>หาย</small><input id="l${i}" type="number" inputmode="numeric" min="0" value="0" oninput="rcalc('${i}')"></label></div><input id="r${i}" placeholder="หมายเหตุ" aria-label="หมายเหตุ" style="width:100%;margin-top:6px"><div class="rem" id="rc${i}"></div></div>`}).join('')}
   <p>ตำหนิ = มีคราบ/ชำรุด รอส่งซักซ้ำ · หาย = ร้านซักแจ้งว่าผ้าสูญหาย · ที่เหลือไม่ได้รับคืนและไม่ตำหนิ/หาย = ไม่ได้รับ (ระบบเปิดเคสให้อัตโนมัติ ทุกเคสไปแสดงที่แอดมิน)</p>
   <div class="sg"><div>ผู้รับ (แม่บ้าน/แอดมิน)${pad('ra')}</div><div>ร้านซัก${pad('rb')}</div></div>
   <button class="p" onclick="saveRet('${s.id}')">บันทึกการรับ + แชร์ไฟล์ A4 (PDF)</button></div>
-  <div class="card"><h3>ใบรับผ้าล่าสุด</h3>${S.rets.slice(-8).reverse().map(r=>{const x=S.sends.find(y=>y.id==r.sendId)||{};return `<div style="padding:4px 0">${x.no||''} · ${r.date} · รับ ${sum(Object.values(r.g))} ชิ้น <button class="s" onclick="openPdf('ret',null,S.rets.find(y=>y.id=='${r.id}'))">📄 เปิด PDF A4</button></div>`}).join('')||'-'}</div>`};
+  <div class="card"><h3>ใบรับผ้าล่าสุด</h3>${S.rets.slice(-8).reverse().map(r=>{const x=S.sends.find(y=>y.id==r.sendId)||{};return `<div style="padding:4px 0">${x.no||''} · ${r.date} · รับ ${sum(Object.values(r.g))} ชิ้น <button class="s" onclick="openPdf('ret',null,S.rets.find(y=>y.id=='${r.id}'))">📄 เปิด PDF A4</button></div>`}).join('')||'<span class="em">ยังไม่มีใบรับผ้า</span>'}</div>`};
 function saveRet(sid){const s=S.sends.find(x=>x.id==sid),g={},d={},l={},rn={};let bad=0;
-  Object.keys(s.lines).forEach(i=>{const a=$('g'+i);if(!a)return;g[i]=+a.value||0;d[i]=+$('d'+i).value||0;l[i]=+$('l'+i).value||0;rn[i]=$('r'+i).value;if(g[i]>outst(s,i))bad=1});
+  Object.keys(s.lines).forEach(i=>{const a=$('g'+i);if(!a)return;g[i]=+a.value||0;d[i]=+$('d'+i).value||0;l[i]=+$('l'+i).value||0;rn[i]=$('r'+i).value;if(g[i]+d[i]+l[i]>outst(s,i))bad=1});
   if(bad)return alert('จำนวนรับเกินยอดค้าง');const RA=signOf('ra','ผู้รับ (แม่บ้าน/แอดมิน)'),RB=signOf('rb','ร้านซัก');if(!RA||!RB)return;
-  const r={id:uid(),sendId:sid,date:today(),g,d,l,rn,ra:RA.sig,ran:RA.n,rad:RA.d,rb:RB.sig,rbn:RB.n,rbd:RB.d};up('rets',r);
+  clrFS();const r={id:uid(),sendId:sid,date:today(),g,d,l,rn,ra:RA.sig,ran:RA.n,rad:RA.d,rb:RB.sig,rbn:RB.n,rbd:RB.d};up('rets',r);
   r.m={};Object.keys(g).forEach(i=>{const out=outst(s,i),dd=Math.min(d[i]||0,out),ll=Math.min(l[i]||0,out-dd),m=out-dd-ll;r.m[i]=m;l[i]=ll;
     [['ตำหนิ',dd],['หาย',ll],['ไม่ได้รับ',m]].forEach(([t,q])=>{const c=S.cases.find(c=>c.sendId==sid&&c.item==i&&(c.t==t||(t=='ไม่ได้รับ'&&c.t=='ขาด'))&&c.st=='open');
       if(c){c.q=q;if(!q){c.st='closed';c.kind='auto'}up('cases',c)}else if(q)up('cases',{id:uid(),src:'shop',sendId:sid,item:i,t,q,st:'open',date:today()})})});
-  up('rets',r);chk(s);const rows=Object.keys(g).filter(i=>g[i]||d[i]).map(i=>`${nm(i)}: รับ ${g[i]} ตำหนิ ${d[i]} หาย ${l[i]}${rn[i]?' ('+rn[i]+')':''}`);render();
+  up('rets',r);chk(s);const rows=Object.keys(g).filter(i=>g[i]||d[i]).map(i=>`${nm(i)}: รับ ${g[i]} ตำหนิ ${d[i]} หาย ${l[i]}${rn[i]?' ('+rn[i]+')':''}`);render();toast('✓ บันทึกการรับผ้าแล้ว',1);
   shareDoc('ret',null,r)}
 function chk(s){s.st=Object.keys(s.lines).some(i=>outst(s,i)>0)?'open':'closed';up('sends',s)}
-function closeCase(id,kind){const c=S.cases.find(x=>x.id==id);let amt=0;
-  if(kind=='ชดใช้'){const v=prompt('จำนวนเงินชดใช้ (บาท)','');if(v===null)return;amt=+v;if(!(amt>0))return alert('กรุณากรอกจำนวนเงินชดใช้เป็นตัวเลขมากกว่า 0 — ยังไม่ปิดเคส')}
+async function closeCase(id,kind){const c=S.cases.find(x=>x.id==id);let amt=0;
+  if(kind=='ชดใช้'){const v=await ask('จำนวนเงินชดใช้ (บาท)',{input:1});if(v===null)return;amt=+v;if(!(amt>0))return alert('กรุณากรอกจำนวนเงินชดใช้เป็นตัวเลขมากกว่า 0 — ยังไม่ปิดเคส')}
   c.st='closed';c.kind=kind;c.cdate=today();c.amt=amt;up('cases',c);const sd=S.sends.find(x=>x.id==c.sendId);if(sd)chk(sd);render()}
 
 // ---- 2. แอดมิน ----
@@ -334,15 +376,15 @@ async function resetData(mode){const all=mode=='all';
     if(r.err)return alert('PIN ไม่ถูกต้อง — ออกจากระบบแล้วเข้าใหม่');
     if(!r.ok)return alert('ล้างไม่สำเร็จ ลองใหม่อีกครั้ง (ข้อมูลยังไม่ถูกลบ)')}
   Q=[];['logs','sends','rets','cases','manual','closes'].concat(all?['cfg']:[]).forEach(c=>S[c]=[]);
-  D={z:0,q:{},n:{},m:today().slice(0,7)};localStorage.removeItem('DQ');save();render();alert('ล้างข้อมูลเรียบร้อย')}
+  clrFS();localStorage.removeItem('since');D={z:0,q:{},n:{},m:today().slice(0,7)};localStorage.removeItem('DQ');save();render();alert('ล้างข้อมูลเรียบร้อย')}
 const cT=c=>c.t=='ขาด'?'ไม่ได้รับ':c.t,cSrc=c=>c.src=='hk'?'แม่บ้าน '+(Z[c.z]||''):'ร้านซัก '+((S.sends.find(x=>x.id==c.sendId)||{}).no||'');
 const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
 function editCost(id,v){const s=S.sends.find(x=>x.id==id);if(!s)return;s.cost=+v||0;up('sends',s);render()}
 function addMan(){const label=$('mn_l').value.trim(),amt=+$('mn_a').value||0,date=$('mn_d').value||today();
   if(!label&&!amt)return alert('กรอกรายการหรือจำนวนเงิน');up('manual',{id:uid(),date,label,amt});render()}
 function editMan(id,f,v){const x=S.manual.find(y=>y.id==id);if(!x)return;x[f]=f=='amt'?(+v||0):v;up('manual',x);render()}
-function delMan(id){const x=S.manual.find(y=>y.id==id);if(!x||!confirm('ลบรายการ '+(x.label||'')+' ?'))return;x.del=1;up('manual',x);render()}
-function closeM(col,snt,cost,man,comp){const m=D.m;if(!confirm('ปิดยอดเดือน '+m+'?'))return;up('closes',{id:'m'+m,month:m,collected:col,sent:snt,cost,manual:man,comp,ts:Date.now()});render()}
+async function delMan(id){const x=S.manual.find(y=>y.id==id);if(!x||!await ask('ลบรายการ '+(x.label||'')+' ?'))return;x.del=1;up('manual',x);render()}
+async function closeM(col,snt,cost,man,comp){const m=D.m;if(!await ask('ปิดยอดเดือน '+m+'?'))return;up('closes',{id:'m'+m,month:m,collected:col,sent:snt,cost,manual:man,comp,ts:Date.now()});render()}
 
 // ---- แจ้งผ้าตำหนิ / ผ้าหาย (แม่บ้าน) ----
 V.dmg=()=>{const I=items(),L=S.cases.filter(c=>c.src=='hk').slice(-15).reverse();
@@ -467,16 +509,17 @@ function ed(k,f,v,z){D.cfg=D.cfg||JSON.parse(JSON.stringify(items()));if(z==null
 function resetNames(){const I=JSON.parse(JSON.stringify(items()));DEF.forEach((d,i)=>{if(I[i])I[i].n=d.n;else I.push(d)});D.cfg=null;up('cfg',{id:'cfg',items:I});render()}
 function saveCfg(){up('cfg',{id:'cfg',items:D.cfg||items()});D.cfg=null;render()}
 
+V.send=()=>V.send0()+V.acc();V.ret=()=>V.ret0()+V.pend(); // รวมแท็บ: ส่งซัก+สะสมยอด, รับคืน+ค้างรับ
 // ---- โครงหน้า ----
-const TABS={hk:['collect','acc','send','ret','pend','dmg','store'],store:['store'],admin:['collect','acc','send','ret','pend','dmg','admin','store']},
+const TABS={hk:['collect','send','ret','dmg','store'],store:['store'],admin:['collect','send','ret','dmg','admin','store']},
   TN={collect:'เก็บผ้า',acc:'สะสมยอดผ้า',pend:'ค้างรับสะสม',send:'ส่งซัก',ret:'รับคืน',dmg:'แจ้งตำหนิ/หาย',admin:'แอดมิน',store:'สต็อก'};
-function render(){
+function render(){snap();
   if(!role){$('app').innerHTML=`<div class="card" style="max-width:320px;margin:60px auto"><h3>🧺 ผ้าซักโรงแรม</h3>
-    <input id="pin" type="password" inputmode="numeric" placeholder="PIN" style="width:100%"><button class="p" onclick="login()">เข้าสู่ระบบ</button>
+    <input id="pin" type="password" inputmode="numeric" placeholder="PIN" aria-label="PIN" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()" style="width:100%"><button class="p" onclick="login()">เข้าสู่ระบบ</button>
     ${API?'':'<p><small>โหมดทดลอง (ยังไม่ตั้ง API): 1111 แม่บ้าน · 2222 สโตร์ · 9999 แอดมิน</small></p>'}</div>`;return}
   const t=TABS[role];if(!t.includes(tab))tab=t[0];
-  $('app').innerHTML=`<header><b>🧺 ผ้าซักโรงแรม</b><span><span id="bd"></span> <button class="s" onclick="sync()">⟳</button> <button class="s" onclick="logout()">ออก</button></span></header>
-  <nav>${t.map(k=>`<button class="${k==tab?'on':''}" onclick="tab='${k}';render()">${TN[k]}</button>`).join('')}</nav>`+V[tab]();
-  initPads();badge()}
-render();if(role)sync();addEventListener('online',flush);
+  $('app').innerHTML=`<div id="top"><header><b>🧺 ผ้าซักโรงแรม</b><span><span id="bd"></span> <button class="s" aria-label="ซิงก์" onclick="sync()">⟳</button> <button class="s" style="margin-left:16px" onclick="ask('ออกจากระบบ?').then(v=>v&&logout())">ออก</button></span></header>
+  <nav>${t.map(k=>`<button class="${k==tab?'on':''}" onclick="tab='${k}';render();scrollTo(0,0)">${TN[k]}${bdg(k)}</button>`).join('')}</nav></div>`+V[tab]();
+  initPads();restore();badge();cUp();document.querySelectorAll('.ic').forEach(c=>rcalc(c.id.slice(2)))}
+render();if(role)sync();addEventListener('online',()=>{flush();badge()});addEventListener('offline',badge);
 </script></body></html>
