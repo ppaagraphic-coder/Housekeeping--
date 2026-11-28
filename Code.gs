@@ -2,7 +2,7 @@
 // (Execute as: Me, Who has access: Anyone) แล้วนำ URL ไปใส่ API ใน index.html
 // เมื่อแก้ไฟล์นี้ ต้อง Deploy > Manage deployments > ✎ > Version: New version > Deploy
 const PINS = { '1111': 'hk', '2222': 'store', '9999': 'admin' }; // เปลี่ยน PIN ก่อนใช้งานจริง
-const COLLS = ['cfg', 'logs', 'sends', 'rets', 'cases', 'manual', 'closes'];
+const COLLS = ['cfg', 'logs', 'sends', 'rets', 'cases', 'manual', 'closes', 'moves']; // moves = สมุดเคลื่อนไหวผ้าในคลัง (ซื้อ/ตัดออก/ตรวจนับ)
 
 function sh(n) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -47,7 +47,7 @@ function doPost(e) {
     R.waitLock(20000);
     try {
       COLLS.forEach(c => {
-        if (b.reset !== 'all' && c === 'cfg') return;
+        if (b.reset !== 'all' && (c === 'cfg' || c === 'moves')) return; // เก็บสต็อก/ประวัติเคลื่อนไหวไว้
         const s = sh(c), n = s.getLastRow();
         if (n > 1) s.deleteRows(2, n - 1);
       });
